@@ -1,6 +1,8 @@
 #include <iostream>
 #include "BLFunctions.h"
 
+#include "ECLabInterface.h"
+
 #include <epicsExport.h>
 
 extern "C" {
@@ -9,9 +11,13 @@ extern "C" {
 
 void bl_test()
 {
-    char version[32], mesg[255];
+   ECLabInterface inf;
+   char version[32], mesg[255];
 	unsigned ver_size = sizeof(version), mesg_size = sizeof(mesg);
 	int status;
+	inf.GetLibVersion(version, &ver_size);
+	std::cout << "Library version " << version << std::endl;
+	ver_size = sizeof(mesg);
     if ( (status = BL_GetLibVersion(version, &ver_size)) == 0 )
 	{
 	    std::cout << "Library version " << version << std::endl;
