@@ -6,23 +6,33 @@ include $(TOP)/configure/CONFIG
 #=============================
 
 #==================================================
-# build a support library
+# Build an IOC support library
 
 LIBRARY_IOC += ECLab
 
-# xxxRecord.h will be created from xxxRecord.dbd
-#DBDINC += xxxRecord
-# install ECLab.dbd into <top>/dbd
+ECLABSDK = $(TOP)/Vendor
+
+USR_CXXFLAGS += -I$(ECLABSDK)/include
+
 DBD += ECLab.dbd
 
-# specify all source files to be compiled and added to the library
-#ECLab_SRCS += xxx
+# The following are compiled and added to the Support library
+ECLab_SRCS += ECLabDriver.cpp 
+
+ifneq ($(findstring windows,$(EPICS_HOST_ARCH)),) 
+ECLab_LIBS += eclib64
+BIN_INSTALLS_WIN32 += $(wildcard $(ECLABSDK)/dll/win64/*.dll)
+endif
+ifneq ($(findstring win32,$(EPICS_HOST_ARCH)),) 
+ECLab_LIBS += eclib
+BIN_INSTALLS_WIN32 += $(wildcard $(ECLABSDK)/dll/win32/*.dll)
+endif
+
+eclib64_DIR = $(ECLABSDK)/lib/win64
+eclib_DIR = $(ECLABSDK)/lib/win32
 
 ECLab_LIBS += $(EPICS_BASE_IOC_LIBS)
-
-#===========================
 
 include $(TOP)/configure/RULES
 #----------------------------------------
 #  ADD RULES AFTER THIS LINE
-

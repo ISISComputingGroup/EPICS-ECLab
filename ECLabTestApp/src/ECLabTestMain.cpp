@@ -11,12 +11,15 @@
 #include "epicsThread.h"
 #include "iocsh.h"
 
+extern "C" __declspec(dllimport) void bl_test();
+
 int main(int argc,char *argv[])
 {
     if(argc>=2) {    
         iocsh(argv[1]);
         epicsThreadSleep(.2);
     }
+	bl_test();
     iocsh(NULL);
     epicsExit(0);
     return(0);
