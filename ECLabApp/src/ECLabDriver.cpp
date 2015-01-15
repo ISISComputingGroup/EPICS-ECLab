@@ -1,7 +1,11 @@
 #include <iostream>
 #include "BLFunctions.h"
 
-extern "C" __declspec(dllexport) void bl_test();
+#include <epicsExport.h>
+
+extern "C" {
+    epicsShareExtern void bl_test();
+}
 
 void bl_test()
 {

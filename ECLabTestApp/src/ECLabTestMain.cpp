@@ -11,7 +11,11 @@
 #include "epicsThread.h"
 #include "iocsh.h"
 
-extern "C" __declspec(dllimport) void bl_test();
+#include <shareLib.h>
+
+extern "C" {
+    epicsShareExtern void bl_test();
+}
 
 int main(int argc,char *argv[])
 {

@@ -39,6 +39,12 @@ $(APPNAME)_DBD += base.dbd
 #$(APPNAME)_LIBS += utilities pcre libjson zlib
 ## Add other libraries here ##
 $(APPNAME)_LIBS += ECLab
+ifneq ($(findstring windows,$(EPICS_HOST_ARCH)),) 
+$(APPNAME)_LIBS += eclib64
+endif
+ifneq ($(findstring win32,$(EPICS_HOST_ARCH)),) 
+$(APPNAME)_LIBS += eclib
+endif
 
 # ECLabTest_registerRecordDeviceDriver.cpp derives from ECLabTest.dbd
 $(APPNAME)_SRCS += $(APPNAME)_registerRecordDeviceDriver.cpp
@@ -58,4 +64,7 @@ $(APPNAME)_LIBS += $(EPICS_BASE_IOC_LIBS)
 include $(TOP)/configure/RULES
 #----------------------------------------
 #  ADD RULES AFTER THIS LINE
+
+
+
 
