@@ -17,13 +17,15 @@ ECLabTest_registerRecordDeviceDriver pdbbase
 ##ISIS## Run IOC initialisation 
 < $(IOCSTARTUP)/init.cmd
 
+ECLabConfigure("test")
+
 ## Load record instances
 
 ##ISIS## Load common DB records 
 < $(IOCSTARTUP)/dbload.cmd
 
 ## Load our record instances
-#dbLoadRecords("db/xxx.db","user=faa59Host")
+dbLoadRecords("db/ECLab.db","P=$(MYPVPREFIX),PORT=test")
 
 ##ISIS## Stuff that needs to be done after all records are loaded but before iocInit is called 
 < $(IOCSTARTUP)/preiocinit.cmd

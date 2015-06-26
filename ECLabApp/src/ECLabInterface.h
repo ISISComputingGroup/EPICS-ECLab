@@ -1,11 +1,15 @@
 #ifndef ECLabInterface_H
 #define ECLabInterface_H
 
+/// @file ECLabInterface.h
+/// Provide an interface to EC lab functions, converting error codes into C++ exceptions 
+/// 
+
 #include <string>
 #include <sstream>
 #include <BLFunctions.h>
 
-/// encapsulates an error code as an exception object
+/// encapsulates an EC lab error code as an exception object
 class ECLabException : public std::runtime_error
 {
  public:
@@ -28,7 +32,7 @@ class ECLabException : public std::runtime_error
 	}
 };
 
- 
+/// call an ECLab function, converting error into an exception 
 #define BL_CALL(__func, ... ) \
     int status = __func ( __VA_ARGS__ ); \
     if ( status != 0 ) \
@@ -36,11 +40,11 @@ class ECLabException : public std::runtime_error
 	    throw ECLabException(#__func, status); \
 	}
 	
-/// Wrap all of the ECLab BL_* function in an interface class that converts 
+/// Wraps all of the ECLab BL_* function in an interface class that converts 
 /// the error code into an exception
 struct ECLabInterface
 {
-    void GetLibVersion(char*  pVersion, unsigned int* psize)
+    static void GetLibVersion(char*  pVersion, unsigned int* psize)
 	{
 	    BL_CALL(BL_GetLibVersion, pVersion, psize);	    
 	}

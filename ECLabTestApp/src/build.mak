@@ -26,7 +26,7 @@ $(APPNAME)_DBD += base.dbd
 #$(APPNAME)_DBD += caPutLog.dbd
 #$(APPNAME)_DBD += utilities.dbd
 ## add other dbd here ##
-#$(APPNAME)_DBD += xxx.dbd
+$(APPNAME)_DBD += ECLab.dbd
 
 # Add all the support libraries needed by this IOC
 ## ISIS standard libraries ##
@@ -39,6 +39,7 @@ $(APPNAME)_DBD += base.dbd
 #$(APPNAME)_LIBS += utilities pcre libjson zlib
 ## Add other libraries here ##
 $(APPNAME)_LIBS += ECLab
+$(APPNAME)_LIBS += asyn
 ifneq ($(findstring windows,$(EPICS_HOST_ARCH)),) 
 $(APPNAME)_LIBS += eclib64
 endif

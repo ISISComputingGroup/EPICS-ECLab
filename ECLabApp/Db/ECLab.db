@@ -1,0 +1,13 @@
+record(stringin, "$(P)ECLABVER")
+{
+    field(DTYP, "asynOctetRead")
+    field(INP, "@asyn($(PORT),0,0)PAR2")
+    field(PINI, "YES")
+}
+
+record(ai, "$(P)ECLABTEST")
+{
+    field(DTYP, "asynFloat64")
+    field(INP, "@asyn($(PORT),0,0)PAR1")
+    field(SCAN, "I/O Intr")
+}

@@ -19,6 +19,8 @@ DBD += ECLab.dbd
 # The following are compiled and added to the Support library
 ECLab_SRCS += ECLabDriver.cpp 
 
+ECLab_LIBS += asyn
+
 ifneq ($(findstring windows,$(EPICS_HOST_ARCH)),) 
 ECLab_LIBS += eclib64
 BIN_INSTALLS_WIN32 += $(wildcard $(ECLABSDK)/dll/win64/*.dll)
