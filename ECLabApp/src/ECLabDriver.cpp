@@ -32,7 +32,7 @@
 #include "ECLabDriver.h"
 
 #include <epicsExport.h>
-
+techniqueMap_t g_map; //GLOBAL!
 
 static const char *driverName="ECLabDriver"; ///< Name of driver for use in message printing 
 
@@ -45,6 +45,20 @@ asynStatus ECLabDriver::readInt32(asynUser *pasynUser, epicsInt32 *value)
 	getParamName(function, &paramName);
 	try
 	{
+		if (function == P_devCode)
+        {
+             *value = m_infos.DeviceCode; 
+			 printf("%d\n", *value);
+        }
+		if (function == P_firmwareVers)
+        {
+             *value = m_infos.FirmwareVersion; 
+			 printf("%d\n", *value);
+        }
+		if (function == P_TO_Trigger_Logic)
+		{
+			printf("%d\n", *value);
+		}
 		asynPrint(pasynUser, ASYN_TRACEIO_DRIVER, 
 			"%s:%s: function=%d, name=%s, value=%d\n", 
 			driverName, functionName, function, paramName, *value);
@@ -69,11 +83,14 @@ asynStatus ECLabDriver::readOctet(asynUser *pasynUser, char *value, size_t maxCh
 	std::string value_s;
  	try
 	{
-        if (function == P_par2)
+        if (function == P_version)
         {
              char version[32], mesg[255];
 	         unsigned ver_size = sizeof(version);
 	         ECLabInterface::GetLibVersion(version, &ver_size);
+			 
+			 printf("%d\n", ver_size);
+			 printf(version);
              value_s = version;
         }
 		if ( value_s.size() > maxChars ) // did we read more than we have space for?
@@ -133,6 +150,41 @@ asynStatus ECLabDriver::writeOctet(asynUser *pasynUser, const char *value, size_
 	}
 }
 
+asynStatus ECLabDriver::writeInt32(asynUser *pasynUser, epicsInt32 value)
+{
+	int function = pasynUser->reason;
+	asynStatus status = asynSuccess;
+	const char *paramName = NULL;
+	getParamName(function, &paramName);
+	const char* functionName = "writeInt32";
+
+	try
+	{
+		if (function == P_TO_Trigger_Logic)
+        {
+			setIntegerParam(P_TO_Trigger_Logic, value);
+             
+        }
+		/*else
+		{
+			asynPortDriver::readInt32(pas, va)
+		}*/
+	
+
+		asynPrint(pasynUser, ASYN_TRACEIO_DRIVER, 
+			"%s:%s: function=%d, name=%s, value=%d\n", 
+			driverName, functionName, function, paramName, value);
+		return asynSuccess;
+	}
+	catch(const std::exception& ex)
+	{
+		epicsSnprintf(pasynUser->errorMessage, pasynUser->errorMessageSize, 
+			"%s:%s: status=%d, function=%d, name=%s, value=%s, error=%s", 
+			driverName, functionName, status, function, paramName);
+		return asynError;
+	}
+}
+
 /// EPICS driver report function for iocsh dbior command
 void ECLabDriver::report(FILE* fp, int details)
 {
@@ -145,7 +197,7 @@ void ECLabDriver::report(FILE* fp, int details)
 /// Calls constructor for the asynPortDriver base class and sets up driver parameters.
 ///
 /// \param[in] portName @copydoc initArg0
-ECLabDriver::ECLabDriver(const char *portName) 
+ECLabDriver::ECLabDriver(const char *portName, const char *ip) 
 	: asynPortDriver(portName, 
 	0, /* maxAddr */ 
 	NUM_ECLAB_PARAMS,
@@ -159,12 +211,22 @@ ECLabDriver::ECLabDriver(const char *portName)
 {
 	int i;
 	const char *functionName = "ECLabDriver";
-	createParam(P_par1String, asynParamFloat64, &P_par1);
-	createParam(P_par2String, asynParamOctet, &P_par2);
-    
+	int ID;
+	
+	unsigned int timeout = 5;
+    createParam(P_par1String, asynParamFloat64, &P_par1);
+	createParam(P_versionString, asynParamOctet, &P_version);
+	createParam(P_devCodeString,asynParamInt32, &P_devCode);
+	createParam(P_firmwareVersString,asynParamInt32, &P_firmwareVers);
+	createParam(P_numChannelsString, asynParamInt32, &P_numChannels);
+	createParam(P_TO_Trigger_LogicString, asynParamInt32, &P_TO_Trigger_Logic);
     setDoubleParam(P_par1, 1.0);
-    setStringParam(P_par2, "unknown");
-
+    setStringParam(P_version, "unknown");
+	setIntegerParam(P_devCode, KBIO_DEV_UNKNOWN);
+	setIntegerParam(P_numChannels, 0);
+	setIntegerParam(P_TO_Trigger_Logic, 1);
+	
+	g_map = globalMapGen();
 
 	// Create the thread for background tasks (not used at present, could be used for I/O intr scanning) 
 	if (epicsThreadCreate("ECLabDriverTask",
@@ -175,6 +237,8 @@ ECLabDriver::ECLabDriver(const char *portName)
 		printf("%s:%s: epicsThreadCreate failure\n", driverName, functionName);
 		return;
 	}
+	ECLabInterface::Connect(const_cast <char *>(ip), timeout, &ID, &m_infos);
+	ECLabInterface::testConnect(ID);
 }
 
 /// @todo Might use this for background polling if implementing I/O Intr scanning
@@ -190,8 +254,10 @@ void ECLabDriver::ECLabTaskC(void* arg)
 void ECLabDriver::ECLabTask() 
 {
     double val = 10.0;
+	int channelVal = 0;
     while(true)
     {
+		setIntegerParam(P_numChannels, m_infos.NumberOfChannels);
         setDoubleParam(P_par1, val);
         callParamCallbacks();
         val += 1.0;
@@ -204,11 +270,11 @@ extern "C" {
 	/// The function is registered via EClabRegister().
 	///
 	/// @param[in] portName @copydoc initArg0
-	int ECLabConfigure(const char *portName)
+	int ECLabConfigure(const char *portName, const char *ip)
 	{
 		try
 		{
-			new ECLabDriver(portName);
+			new ECLabDriver(portName, ip);
 			return(asynSuccess);
 		}
 		catch(const std::exception& ex)
@@ -221,14 +287,14 @@ extern "C" {
 	// EPICS iocsh shell commands 
 
 	static const iocshArg initArg0 = { "portName", iocshArgString};			///< A name for the asyn driver instance we will create - used to refer to it from EPICS DB files
-
-	static const iocshArg * const initArgs[] = { &initArg0 };
+	static const iocshArg initArg1 = { "ip", iocshArgString};			///< IP address used
+	static const iocshArg * const initArgs[] = { &initArg0, &initArg1 };
 
 	static const iocshFuncDef initFuncDef = {"ECLabConfigure", sizeof(initArgs) / sizeof(iocshArg*), initArgs};
 
 	static void initCallFunc(const iocshArgBuf *args)
 	{
-		ECLabConfigure(args[0].sval);
+		ECLabConfigure(args[0].sval, args[1].sval);
 	}
 	
 	/// Register new commands with EPICS IOC shell

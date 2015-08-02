@@ -17,7 +17,7 @@ ECLabTest_registerRecordDeviceDriver pdbbase
 ##ISIS## Run IOC initialisation 
 < $(IOCSTARTUP)/init.cmd
 
-ECLabConfigure("test")
+ECLabConfigure("test", 130.246.36.213)
 
 ## Load record instances
 

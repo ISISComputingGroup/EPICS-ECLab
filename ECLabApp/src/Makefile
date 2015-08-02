@@ -12,12 +12,12 @@ LIBRARY_IOC += ECLab
 
 ECLABSDK = $(TOP)/Vendor
 
-USR_CXXFLAGS += -I$(ECLABSDK)/include
+USR_CXXFLAGS += -I$(ECLABSDK)/include -DBIOLOGIC_EXPORTS
 
 DBD += ECLab.dbd
 
 # The following are compiled and added to the Support library
-ECLab_SRCS += ECLabDriver.cpp 
+ECLab_SRCS += ECLabDriver.cpp dummyFunctions.cpp 
 
 ECLab_LIBS += asyn
 

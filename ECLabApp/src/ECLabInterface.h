@@ -46,7 +46,22 @@ struct ECLabInterface
 {
     static void GetLibVersion(char*  pVersion, unsigned int* psize)
 	{
-	    BL_CALL(BL_GetLibVersion, pVersion, psize);	    
+	    BL_CALL(BL_GetLibVersion, pVersion, psize);	
+	}
+	
+	static void Connect(const char* address, uint8 TimeOut, int* pID, TDeviceInfos_t* pInfos)
+	{
+		BL_CALL(BL_Connect, address, TimeOut, pID, pInfos );
+	}
+	
+	static void testConnect(int ID)
+	{
+		BL_CALL(BL_TestConnection, ID);
+	}
+	
+	static void Disconnect(int ID)
+	{
+		BL_CALL(BL_Disconnect, ID);
 	}
 };
 
