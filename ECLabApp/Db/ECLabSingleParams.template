@@ -1,0 +1,18 @@
+record(ai, "$(P)ECLAB:C$(CHAN):$(TECH):$(PARAM)")
+{
+    field(DESC, "$(DESC)")
+    field(DTYP, "asynFloat64")
+    field(INP, "@asyn($(PORT),$(CHAN),0)$(TECH)_$(PARAM)")
+    field(SCAN, "I/O Intr")
+	field(PREC, 3)
+	field(EGU, "$(EGU)")
+}
+
+record(ao, "$(P)ECLAB:C$(CHAN):$(TECH):$(PARAM):SP")
+{
+    field(DESC, "$(DESC)")
+    field(DTYP, "asynFloat64")
+    field(OUT, "@asyn($(PORT),$(CHAN),0)$(TECH)_$(PARAM)")
+	field(PREC, 3)
+	field(EGU, "$(EGU)")
+}

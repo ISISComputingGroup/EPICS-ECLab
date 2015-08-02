@@ -17,7 +17,7 @@ USR_CXXFLAGS += -I$(ECLABSDK)/include -DBIOLOGIC_EXPORTS
 DBD += ECLab.dbd
 
 # The following are compiled and added to the Support library
-ECLab_SRCS += ECLabDriver.cpp dummyFunctions.cpp 
+ECLab_SRCS += ECLabParams.cpp ECLabDriver.cpp dummyFunctions.cpp 
 
 ECLab_LIBS += asyn
 
@@ -40,3 +40,24 @@ ECLab_LIBS += $(EPICS_BASE_IOC_LIBS)
 include $(TOP)/configure/RULES
 #----------------------------------------
 #  ADD RULES AFTER THIS LINE
+../ECLabParams.cpp : BooleanParams.cpp IntegerParams.cpp SingleParams.cpp 
+../ECLabParams.cpp : BooleanArrayParams.cpp IntegerArrayParams.cpp SingleArrayParams.cpp
+
+BooleanParams.cpp : $(TOP)/ECLabApp/Db/ECLabBooleanParams.substitutions
+	$(MSI) -o $@ -M "TYPE=Boolean" -S $< $(TOP)/ECLabApp/src/ScalarParams.cpp
+	
+IntegerParams.cpp : $(TOP)/ECLabApp/Db/ECLabIntegerParams.substitutions
+	$(MSI) -o $@ -M "TYPE=Integer" -S $< $(TOP)/ECLabApp/src/ScalarParams.cpp
+
+SingleParams.cpp : $(TOP)/ECLabApp/Db/ECLabSingleParams.substitutions
+	$(MSI) -o $@ -M "TYPE=Single" -S $< $(TOP)/ECLabApp/src/ScalarParams.cpp
+
+BooleanArrayParams.cpp : $(TOP)/ECLabApp/Db/ECLabBooleanArrayParams.substitutions
+	$(MSI) -o $@ -M "TYPE=BooleanArray" -S $< $(TOP)/ECLabApp/src/ArrayParams.cpp
+	
+IntegerArrayParams.cpp : $(TOP)/ECLabApp/Db/ECLabIntegerArrayParams.substitutions
+	$(MSI) -o $@ -M "TYPE=IntegerArray" -S $< $(TOP)/ECLabApp/src/ArrayParams.cpp
+
+SingleArrayParams.cpp : $(TOP)/ECLabApp/Db/ECLabSingleArrayParams.substitutions
+	$(MSI) -o $@ -M "TYPE=SingleArray" -S $< $(TOP)/ECLabApp/src/ArrayParams.cpp
+

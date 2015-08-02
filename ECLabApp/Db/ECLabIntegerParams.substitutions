@@ -1,0 +1,4 @@
+# LABEL is parameter name in ECLab, PARAM is name withing ASYN/EPICS DB
+# every technique can have I_Range, E_Range and Bandwidth
+pattern { P, CHAN, PORT, TECH, PARAM, LABEL, DESC, EGU, NELM }
+{ "\$(P)", "\$(CHAN)", "\$(PORT)", "CA", "T1CONFIG", "Test1_Config", "Configuration of Test1 by step", "", 20 }

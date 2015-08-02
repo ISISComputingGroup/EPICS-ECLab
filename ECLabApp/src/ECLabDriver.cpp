@@ -16,6 +16,7 @@
 #include <exception>
 #include <iostream>
 #include <map>
+#include <vector>
 
 #include <epicsTypes.h>
 #include <epicsTime.h>
@@ -31,8 +32,9 @@
 #include "ECLabInterface.h"
 #include "ECLabDriver.h"
 
+#include "ECLabParams.h"
+
 #include <epicsExport.h>
-techniqueMap_t g_map; //GLOBAL!
 
 static const char *driverName="ECLabDriver"; ///< Name of driver for use in message printing 
 
@@ -50,13 +52,14 @@ asynStatus ECLabDriver::readInt32(asynUser *pasynUser, epicsInt32 *value)
              *value = m_infos.DeviceCode; 
 			 printf("%d\n", *value);
         }
-		if (function == P_firmwareVers)
+		else if (function == P_firmwareVers)
         {
              *value = m_infos.FirmwareVersion; 
 			 printf("%d\n", *value);
         }
-		if (function == P_TO_Trigger_Logic)
+		else
 		{
+			asynPortDriver::readInt32(pasynUser, value);
 			printf("%d\n", *value);
 		}
 		asynPrint(pasynUser, ASYN_TRACEIO_DRIVER, 
@@ -73,6 +76,7 @@ asynStatus ECLabDriver::readInt32(asynUser *pasynUser, epicsInt32 *value)
 	}
 }
 
+#if 0
 asynStatus ECLabDriver::readOctet(asynUser *pasynUser, char *value, size_t maxChars, size_t *nActual, int *eomReason)
 {
 	int function = pasynUser->reason;
@@ -123,6 +127,7 @@ asynStatus ECLabDriver::readOctet(asynUser *pasynUser, char *value, size_t maxCh
 		return asynError;
 	}
 }
+#endif
 
 asynStatus ECLabDriver::writeOctet(asynUser *pasynUser, const char *value, size_t maxChars, size_t *nActual)
 {
@@ -134,6 +139,10 @@ asynStatus ECLabDriver::writeOctet(asynUser *pasynUser, const char *value, size_
 	std::string value_s(value, maxChars);
 	try
 	{
+	    if (function == P_loadTech)
+		{
+		}
+		asynPortDriver::writeOctet(pasynUser, value, maxChars, nActual);
 		asynPrint(pasynUser, ASYN_TRACEIO_DRIVER, 
 			"%s:%s: function=%d, name=%s, value=%s\n", 
 			driverName, functionName, function, paramName, value_s.c_str());
@@ -150,6 +159,7 @@ asynStatus ECLabDriver::writeOctet(asynUser *pasynUser, const char *value, size_
 	}
 }
 
+
 asynStatus ECLabDriver::writeInt32(asynUser *pasynUser, epicsInt32 value)
 {
 	int function = pasynUser->reason;
@@ -160,17 +170,7 @@ asynStatus ECLabDriver::writeInt32(asynUser *pasynUser, epicsInt32 value)
 
 	try
 	{
-		if (function == P_TO_Trigger_Logic)
-        {
-			setIntegerParam(P_TO_Trigger_Logic, value);
-             
-        }
-		/*else
-		{
-			asynPortDriver::readInt32(pas, va)
-		}*/
-	
-
+		asynPortDriver::writeInt32(pasynUser, value);
 		asynPrint(pasynUser, ASYN_TRACEIO_DRIVER, 
 			"%s:%s: function=%d, name=%s, value=%d\n", 
 			driverName, functionName, function, paramName, value);
@@ -200,9 +200,9 @@ void ECLabDriver::report(FILE* fp, int details)
 ECLabDriver::ECLabDriver(const char *portName, const char *ip) 
 	: asynPortDriver(portName, 
 	0, /* maxAddr */ 
-	NUM_ECLAB_PARAMS,
-	asynInt32Mask | asynInt32ArrayMask | asynFloat64Mask | asynFloat64ArrayMask | asynOctetMask | asynDrvUserMask, /* Interface mask */
-	asynInt32Mask | asynInt32ArrayMask | asynFloat64Mask | asynFloat64ArrayMask | asynOctetMask,  /* Interrupt mask */
+	NUM_ECLAB_PARAMS + 50,
+	asynInt32Mask | asynInt32ArrayMask | asynInt8ArrayMask | asynFloat64Mask | asynFloat32ArrayMask | asynOctetMask | asynDrvUserMask, /* Interface mask */
+	asynInt32Mask | asynInt32ArrayMask | asynInt8ArrayMask | asynFloat64Mask | asynFloat32ArrayMask | asynOctetMask,  /* Interrupt mask */
 	ASYN_CANBLOCK, /* asynFlags.  This driver can block but it is not multi-device */
 	1, /* Autoconnect */
 	0, /* Default priority */
@@ -214,19 +214,19 @@ ECLabDriver::ECLabDriver(const char *portName, const char *ip)
 	int ID;
 	
 	unsigned int timeout = 5;
-    createParam(P_par1String, asynParamFloat64, &P_par1);
 	createParam(P_versionString, asynParamOctet, &P_version);
 	createParam(P_devCodeString,asynParamInt32, &P_devCode);
 	createParam(P_firmwareVersString,asynParamInt32, &P_firmwareVers);
 	createParam(P_numChannelsString, asynParamInt32, &P_numChannels);
-	createParam(P_TO_Trigger_LogicString, asynParamInt32, &P_TO_Trigger_Logic);
-    setDoubleParam(P_par1, 1.0);
+	createParam(P_loadTechString, asynParamOctet, &P_loadTech);
+
     setStringParam(P_version, "unknown");
 	setIntegerParam(P_devCode, KBIO_DEV_UNKNOWN);
 	setIntegerParam(P_numChannels, 0);
-	setIntegerParam(P_TO_Trigger_Logic, 1);
 	
-	g_map = globalMapGen();
+	addAllParameters(this);
+	
+//	g_map = globalMapGen();
 
 	// Create the thread for background tasks (not used at present, could be used for I/O intr scanning) 
 	if (epicsThreadCreate("ECLabDriverTask",
@@ -237,7 +237,14 @@ ECLabDriver::ECLabDriver(const char *portName, const char *ip)
 		printf("%s:%s: epicsThreadCreate failure\n", driverName, functionName);
 		return;
 	}
-	ECLabInterface::Connect(const_cast <char *>(ip), timeout, &ID, &m_infos);
+	char version[32], mesg[255];
+	unsigned ver_size = sizeof(version);
+	ECLabInterface::GetLibVersion(version, &ver_size);
+	setStringParam(P_version, version);
+	ECLabInterface::Connect(const_cast<char *>(ip), timeout, &ID, &m_infos);
+	setIntegerParam(P_devCode, m_infos.DeviceCode);
+	setIntegerParam(P_firmwareVers, m_infos.FirmwareVersion);
+	setIntegerParam(P_numChannels, m_infos.NumberOfChannels);
 	ECLabInterface::testConnect(ID);
 }
 
@@ -253,14 +260,12 @@ void ECLabDriver::ECLabTaskC(void* arg)
 
 void ECLabDriver::ECLabTask() 
 {
-    double val = 10.0;
-	int channelVal = 0;
     while(true)
     {
+	    lock();
 		setIntegerParam(P_numChannels, m_infos.NumberOfChannels);
-        setDoubleParam(P_par1, val);
         callParamCallbacks();
-        val += 1.0;
+		unlock();
         epicsThreadSleep(1.0);        
     }
 }

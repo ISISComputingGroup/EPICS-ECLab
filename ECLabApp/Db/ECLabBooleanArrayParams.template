@@ -1,0 +1,18 @@
+record(waveform, "$(P)ECLAB:C$(CHAN):$(TECH):$(PARAM)")
+{
+    field(DESC, "$(DESC)")
+    field(DTYP, "asynInt8ArrayIn")
+    field(INP, "@asyn($(PORT),$(CHAN),0)$(TECH)_$(PARAM)")
+	field(NELM, "$(NELM)")
+	field(FTVL, "UCHAR")
+    field(SCAN, "I/O Intr")
+}
+
+record(waveform, "$(P)ECLAB:C$(CHAN):$(TECH):$(PARAM):SP")
+{
+    field(DESC, "$(DESC)")
+    field(DTYP, "asynInt8ArrayOut")
+    field(INP, "@asyn($(PORT),$(CHAN),0)$(TECH)_$(PARAM)")
+	field(NELM, "$(NELM)")
+	field(FTVL, "UCHAR")
+}

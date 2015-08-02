@@ -1,0 +1,4 @@
+# LABEL is parameter name in ECLab, PARAM is name withing ASYN/EPICS DB
+pattern { P, CHAN, PORT, TECH, PARAM, LABEL, DESC }
+{ "\$(P)", "\$(CHAN)", "\$(PORT)", "CV", "ADE", "Average_over_dE", "Average every dE" }
+

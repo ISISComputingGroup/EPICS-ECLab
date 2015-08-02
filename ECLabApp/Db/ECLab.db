@@ -1,60 +1,33 @@
-record(stringin, "$(P)ECLABVER")
+record(stringin, "$(P)ECLAB:VER")
 {
     field(DTYP, "asynOctetRead")
     field(INP, "@asyn($(PORT),0,0)VERSION")
     field(PINI, "YES")
 }
 
-record(ai, "$(P)ECLABTEST")
-{
-    field(DTYP, "asynFloat64")
-    field(INP, "@asyn($(PORT),0,0)PAR1")
-    field(SCAN, "I/O Intr")
-}
-
-record(longin, "$(P)ECLABDEVCODE")
+record(longin, "$(P)ECLAB:DEVCODE")
 {
     field(DTYP, "asynInt32")
     field(INP, "@asyn($(PORT),0,0)DEVCODE")
     field(PINI, "YES")
 }
 
-record(longin, "$(P)ECLABFIRMWAREVERS")
+record(longin, "$(P)ECLAB:FIRMWAREVERS")
 {
     field(DTYP, "asynInt32")
     field(INP, "@asyn($(PORT),0,0)FIRMWAREVERS")
     field(PINI, "YES")
 }
 
-record(longin, "$(P)ECLABNUMCHANNELS")
+record(longin, "$(P)ECLAB:NUMCHANNELS")
 {
     field(DTYP, "asynInt32")
     field(INP, "@asyn($(PORT),0,0)NUMCHANNELS")
     field(SCAN, "I/O Intr")
 }
 
-record(stringin, "$(P)ECLABLOADTECHARRAY")
-{
-    field(DTYP, "asynOctetRead")
-    field(INP, "@asyn($(PORT),0,0)DEFINETECHARRAY")
-    field(SCAN, "I/O Intr")
-}
-
-record(stringout, "$(P)ECLABDEFINETECHARRAY:SP")
+record(stringout, "$(P)ECLAB:LOADTECH:SP")
 {
     field(DTYP, "asynOctetWrite")
-    field(OUT, "@asyn($(PORT),0,0)DEFINETECHARRAY:SP")
-}
-
-record(longin, "$(P)ECLAB:TO:TRIGGER_LOGIC")
-{
-    field(DTYP, "asynInt32")
-    field(INP, "@asyn($(PORT),0,0)TO:TRIGGER_LOGIC")
-    field(SCAN, "I/O Intr")
-}
-
-record(longout, "$(P)ECLAB:TO:TRIGGER_LOGIC:SP")
-{
-    field(DTYP, "asynInt32")
-    field(OUT, "@asyn($(PORT),0,0)TO:TRIGGER_LOGIC")
+    field(OUT, "@asyn($(PORT),0,0)LOADTECH")
 }
