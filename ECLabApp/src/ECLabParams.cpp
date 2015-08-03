@@ -3,7 +3,7 @@
 #include <vector>
 #include <iostream>
 #include <asynPortDriver.h>
-#include <BLStructs.h>
+#include <BLFunctions.h>
 
 #include "ECLabParams.h"
 
@@ -49,6 +49,54 @@ static void addTechParam(asynPortDriver* driver, techniqueMap_t& the_map, const 
 	
 }
 
+void setECIntegerParam(asynPortDriver* driver, int id, epicsInt32 value)
+{
+    driver->setIntegerParam(id, value);
+	technique_t& t = g_map[id];
+	t.update = true;
+	if (t.value.size() == 0)
+	{
+	    t.value.resize(1);
+	}
+	if (t.type == Boolean)
+	{
+	    BL_DefineBoolParameter(t.label.c_str(), (value != 0 ? true : false), 0, &(t.value[0]));
+	}
+	else
+	{
+	    BL_DefineIntParameter(t.label.c_str(), value, 0, &(t.value[0]));
+	}
+}	
+
+void setECSingleParam(asynPortDriver* driver, int id, epicsFloat64 value)
+{
+    driver->setDoubleParam(id, value);
+	technique_t& t = g_map[id];
+	t.update = true;
+	if (t.value.size() == 0)
+	{
+	    t.value.resize(1);
+	}
+	BL_DefineSglParameter(t.label.c_str(), static_cast<float>(value), 0, &(t.value[0]));
+}	
+
+void getTechniqueParams(const std::string& technique, std::vector<TEccParam_t>& values, bool changes_only)
+{
+	for(techniqueMap_t::iterator it = g_map.begin(); it != g_map.end(); ++it)
+	{	    
+	    technique_t& t = it->second;
+		if (changes_only && !t.update)
+		{
+		    continue;
+		}
+		if (t.technique == technique)
+		{
+		    values.insert(values.end(), t.value.begin(), t.value.end());
+			t.update = false;
+		}
+	}
+}
+	
 void addAllParameters(asynPortDriver* driver)
 {
 #include "BooleanParams.cpp"

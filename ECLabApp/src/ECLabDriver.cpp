@@ -170,7 +170,7 @@ asynStatus ECLabDriver::writeInt32(asynUser *pasynUser, epicsInt32 value)
 
 	try
 	{
-		asynPortDriver::writeInt32(pasynUser, value);
+		setECIntegerParam(this, function, value);
 		asynPrint(pasynUser, ASYN_TRACEIO_DRIVER, 
 			"%s:%s: function=%d, name=%s, value=%d\n", 
 			driverName, functionName, function, paramName, value);
