@@ -1,3 +1,7 @@
+#include <vector>
+#include "BLFunctions.h"
+#include <epicsTypes.h>
+class asynPortDriver;
 
 enum ParamType { Single, Boolean, Integer, SingleArray, BooleanArray, IntegerArray };
 

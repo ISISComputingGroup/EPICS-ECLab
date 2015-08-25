@@ -15,21 +15,23 @@
 #include<string>
 #include<map>
 
-typedef std::map<std::string, std::string> fakeTEccParams_t;
+#include<ECLabParams.h>
 
-class Technique
+class ECLabTechnique
 {
 public:
-  Technique(std::string name, int index, int totalArraySize);
+  ECLabTechnique(std::string name, int index);
   std::string name;
   int index;
-  fakeTEccParams_t TEccParams_t1;
   bool first;
   bool last;
+  std::vector<TEccParam_t> values;
+  
 
 private:
   void getTEccParams();
-  void setFirstLast(int totalArraySize);
 
 
 };
+
+#endif

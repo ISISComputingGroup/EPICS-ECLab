@@ -1,34 +1,18 @@
-Technique::Technique(std::string name, int index, int totalArraySize) 
+#include<ECLabTechnique.h>
+
+ECLabTechnique::ECLabTechnique(std::string name, int index) 
 {
-  Technique::index = index;
-  Technique::name = name;
-  Technique::setFirstLast(totalArraySize);
-  Technique::getTEccParams();
+  ECLabTechnique::index = index;
+  ECLabTechnique::name = name;
+  if (index == 0)
+  {
+	ECLabTechnique::first = true;
+  }
+  else{ECLabTechnique::first = false;}
+  ECLabTechnique::getTEccParams();
 }
 
-void Technique::setFirstLast(int totalArraySize)
+void ECLabTechnique::getTEccParams()
 {
-
-  if (Technique::index == 0)
-  {
-    Technique::first = true;
-  }
-  else {Technique::first = false;}
-  if (totalArraySize - Technique::index == 0)
-  {
-    Technique::last = true;
-  }
-  else {Technique::last = false;}
-
-}
-
-void Technique::getTEccParams()
-{
-  /*auto techName =  g_map.at(Technique::name);
-  for(auto iterator = techName.begin(); iterator !=techName.end(); iterator++)
-  {
-  std::cout << iterator->second.type << std::endl; //will use this to cast as correct type when putting into TEccParams
-  Technique::TEccParams_t1[iterator->first] = iterator->second.Params;
-  }*/
-
+  getTechniqueParams(ECLabTechnique::name, ECLabTechnique::values, false);
 }

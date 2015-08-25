@@ -1,10 +1,8 @@
 #include <string>
 #include <map>
-#include <vector>
 #include <iostream>
-#include <asynPortDriver.h>
-#include <BLFunctions.h>
 
+#include "asynPortDriver.h"
 #include "ECLabParams.h"
 
 techniqueMap_t g_map;
