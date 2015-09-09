@@ -31,13 +31,13 @@
 #include "BLFunctions.h"
 #include "ECLabInterface.h"
 #include "ECLabDriver.h"
-
-#include "ECLabParams.h"
+#include "ECLabTechnique.h"
+//#include "ECLabParams.h"
 
 #include <epicsExport.h>
 
 static const char *driverName="ECLabDriver"; ///< Name of driver for use in message printing 
-
+int g_NUMTECHNIQUES;
 asynStatus ECLabDriver::readInt32(asynUser *pasynUser, epicsInt32 *value)
 {
     const char* functionName = "readInt32";
@@ -97,6 +97,16 @@ asynStatus ECLabDriver::readOctet(asynUser *pasynUser, char *value, size_t maxCh
 			 printf(version);
              value_s = version;
         }
+		
+		if (function == P_channelInfo)
+		{
+			int ch, ID;
+			getIntegerParam(P_channelNum, ch);
+			getIntegerParam(P_devID, ID);
+			TChannelInfos_t pInfos;
+			ECLabInterface::GetChannelInfos(ID, ch, &pInfos);
+			//print it out?
+		}
 		if ( value_s.size() > maxChars ) // did we read more than we have space for?
 		{
 			*nActual = maxChars;
@@ -129,7 +139,7 @@ asynStatus ECLabDriver::readOctet(asynUser *pasynUser, char *value, size_t maxCh
 }
 #endif
 
-asynStatus ECLabDriver::writeOctet(asynUser *pasynUser, const char *value, size_t maxChars, size_t *nActual)
+asynStatus ECLabDriver::writeOctet(asynUser *pasynUser, const char *value, size_t maxChars, size_t *nActual) 
 {
 	int function = pasynUser->reason;
 	asynStatus status = asynSuccess;
@@ -139,8 +149,9 @@ asynStatus ECLabDriver::writeOctet(asynUser *pasynUser, const char *value, size_
 	std::string value_s(value, maxChars);
 	try
 	{
-	    if (function == P_loadTech)
+	    if (function == P_defineTech)
 		{
+			
 		}
 		asynPortDriver::writeOctet(pasynUser, value, maxChars, nActual);
 		asynPrint(pasynUser, ASYN_TRACEIO_DRIVER, 
@@ -170,11 +181,53 @@ asynStatus ECLabDriver::writeInt32(asynUser *pasynUser, epicsInt32 value)
 
 	try
 	{
+		if (function == P_loadTech)
+		{
+			char valueCopy[64];
+			getStringParam(P_defineTech, sizeof(valueCopy), valueCopy);
+			char *tok_save;
+			std::vector<ECLabTechnique*> definedTechs; //empty ever time when class obj (empty vec func?)
+			char * pch;
+			pch = epicsStrtok_r(valueCopy, " ", &tok_save);
+			int i = 0;
+			while (pch != NULL)
+			{
+				definedTechs.push_back(new ECLabTechnique(pch, i));
+				i++;
+				pch = epicsStrtok_r(NULL, " ", &tok_save); 				
+			}
+			//assuming devCode == devID
+			int devID, channelNum;
+			getIntegerParam(P_devID, &devID);
+			getIntegerParam(P_channelNum, &channelNum);
+			g_NUMTECHNIQUES = definedTechs.size();
+			printf("%d\n", g_NUMTECHNIQUES);
+			definedTechs[g_NUMTECHNIQUES-1]->last = true;
+			TEccParams_t params;
+			TEccParam_t test;
+			for (i = 0; i < definedTechs.size(); i++)
+			{
+				//int size = definedTechs[i]->values.size()+1
+				//TEccParam_t arrayValues[];
+				//std::copy(definedTechs[i]->values.begin(), definedTechs[i]->values.end(), arrayValues);
+				params.pParams = &(definedTechs[i]->values[0]); //need to iterate through here
+				//params.pParams = &test;
+				params.len = definedTechs[i]->values.size();
+				char * name = new char[(definedTechs[i]->name).length() + 1];
+				std::strcpy(name,definedTechs[i]->name.c_str());
+				ECLabInterface::LoadTechnique(devID, channelNum, name, params, definedTechs[i]->first, definedTechs[i]->last, true);
+			}
+			//need to update params
+			ECLabInterface::startChannel(devID, channelNum);
+
+			
+		}
 		setECIntegerParam(this, function, value);
 		asynPrint(pasynUser, ASYN_TRACEIO_DRIVER, 
 			"%s:%s: function=%d, name=%s, value=%d\n", 
 			driverName, functionName, function, paramName, value);
 		return asynSuccess;
+		
 	}
 	catch(const std::exception& ex)
 	{
@@ -218,11 +271,16 @@ ECLabDriver::ECLabDriver(const char *portName, const char *ip)
 	createParam(P_devCodeString,asynParamInt32, &P_devCode);
 	createParam(P_firmwareVersString,asynParamInt32, &P_firmwareVers);
 	createParam(P_numChannelsString, asynParamInt32, &P_numChannels);
-	createParam(P_loadTechString, asynParamOctet, &P_loadTech);
+	createParam(P_defineTechString, asynParamOctet, &P_defineTech);
+	createParam(P_loadTechString, asynParamInt32, &P_loadTech);
+	createParam(P_channelInfoString, asynParamOctet, &P_channelInfo);
+	createParam(P_channelNumString, asynParamInt32, &P_channelNum);
+	createParam(P_devIDString, asynParamInt32, &P_devID);
 
     setStringParam(P_version, "unknown");
 	setIntegerParam(P_devCode, KBIO_DEV_UNKNOWN);
 	setIntegerParam(P_numChannels, 0);
+	setIntegerParam(P_channelNum, 1);
 	
 	addAllParameters(this);
 	
@@ -242,6 +300,7 @@ ECLabDriver::ECLabDriver(const char *portName, const char *ip)
 	ECLabInterface::GetLibVersion(version, &ver_size);
 	setStringParam(P_version, version);
 	ECLabInterface::Connect(const_cast<char *>(ip), timeout, &ID, &m_infos);
+	setIntegerParam(P_devID, ID);
 	setIntegerParam(P_devCode, m_infos.DeviceCode);
 	setIntegerParam(P_firmwareVers, m_infos.FirmwareVersion);
 	setIntegerParam(P_numChannels, m_infos.NumberOfChannels);

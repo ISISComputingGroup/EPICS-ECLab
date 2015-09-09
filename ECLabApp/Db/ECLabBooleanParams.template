@@ -11,4 +11,5 @@ record(bo, "$(P)ECLAB:C$(CHAN):$(TECH):$(PARAM):SP")
     field(DESC, "$(DESC)")
     field(DTYP, "asynInt32")
     field(OUT, "@asyn($(PORT),$(CHAN),0)$(TECH)_$(PARAM)")
+	field(PINI, 1)
 }

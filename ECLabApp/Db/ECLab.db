@@ -26,8 +26,34 @@ record(longin, "$(P)ECLAB:NUMCHANNELS")
     field(SCAN, "I/O Intr")
 }
 
-record(stringout, "$(P)ECLAB:LOADTECH:SP")
+record(longout, "$(P)ECLAB:LOADTECH:SP")
+{
+    field(DTYP, "asynInt32")
+    field(OUT, "@asyn($(PORT),0,0)LOADTECH")
+}
+
+record(stringout, "$(P)ECLAB:DEFINETECH:SP")
 {
     field(DTYP, "asynOctetWrite")
-    field(OUT, "@asyn($(PORT),0,0)LOADTECH")
+    field(OUT, "@asyn($(PORT),0,0)DEFINETECH")
+}
+
+record(stringin, "$(P)ECLAB:CHANNELINFO")
+{
+    field(DTYP, "asynOctetRead")
+    field(INP, "@asyn($(PORT),0,0)CHANNELINFO")
+    field(PINI, "YES")
+}
+
+record(longout, "$(P)ECLAB:CHANNELNUM:SP")
+{
+    field(DTYP, "asynInt32")
+    field(OUT, "@asyn($(PORT),0,0)CHANNELNUM")
+}
+
+record(longin, "$(P)ECLAB:DEVID")
+{
+    field(DTYP, "asynInt32")
+    field(INP, "@asyn($(PORT),0,0)DEVID")
+    field(PINI, "YES")
 }

@@ -34,9 +34,14 @@ public:
 private:
 	int P_version; // string
 	int P_devCode; 
-	int P_loadTech;
+	int P_defineTech;
 	int P_numChannels;
+	int P_loadTech;
+	int P_channelInfo;
+	int P_channelNum;
+	int P_devID;
 	int P_firmwareVers;
+	
 	
 	TDeviceInfos_t m_infos;
 	
@@ -51,8 +56,12 @@ private:
 
 #define P_versionString "VERSION"
 #define P_devCodeString "DEVCODE"
-#define P_loadTechString "LOADTECH"
+#define P_defineTechString "DEFINETECH"
 #define P_firmwareVersString "FIRMWAREVERS" 
 #define P_numChannelsString "NUMCHANNELS"
+#define P_loadTechString "LOADTECH"
+#define P_channelInfoString "CHANNELINFO"
+#define P_channelNumString "CHANNELNUM"
+#define P_devIDString "DEVID"
 
 #endif /* ECLABDRIVER_H */

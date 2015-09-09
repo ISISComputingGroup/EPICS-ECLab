@@ -63,6 +63,21 @@ struct ECLabInterface
 	{
 		BL_CALL(BL_Disconnect, ID);
 	}
+	
+	static void startChannel(int ID, uint8 channel)
+	{
+		BL_CALL(BL_StartChannel, ID, channel);
+	}
+	
+	static void LoadTechnique(int ID, uint8 channel, char* pFName, TEccParams_t Params, bool FirstTechnique, bool LastTechnique, bool DisplayParams)
+	{
+		BL_CALL(BL_LoadTechnique, ID, channel, pFName, Params, FirstTechnique, LastTechnique, DisplayParams);
+	}
+	
+	static void GetChannelInfos (int ID, uint8 ch, TChannelInfos_t *pInfos)
+	{
+		BL_CALL(BL_GetChannelInfos, ID, ch, pInfos);
+	}
 };
 
 #endif /* ECLabInterface_H */
