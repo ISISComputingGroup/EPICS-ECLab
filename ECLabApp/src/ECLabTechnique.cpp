@@ -15,4 +15,5 @@ ECLabTechnique::ECLabTechnique(std::string name, int index)
 void ECLabTechnique::getTEccParams()
 {
   getTechniqueParams(ECLabTechnique::name, ECLabTechnique::values, false);
+  //print out something useful here
 }

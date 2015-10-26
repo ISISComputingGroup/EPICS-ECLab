@@ -1,59 +1,73 @@
 record(stringin, "$(P)ECLAB:VER")
 {
     field(DTYP, "asynOctetRead")
-    field(INP, "@asyn($(PORT),0,0)VERSION")
+    field(INP, "@asyn($(PORT),$(CHAN),0)VERSION")
+    field(PINI, "YES")
+}
+
+record(longin, "$(P)ECLAB:C$(CHAN):CURRENTVALUES")
+{
+    field(DTYP, "asynInt32")
+    field(INP, "@asyn($(PORT),$(CHAN),0)CURRENTVALUES")
+    field(PINI, "YES")
+}
+
+record(longin, "$(P)ECLAB:C$(CHAN):CHANNELINFO")
+{
+    field(DTYP, "asynInt32")
+    field(INP, "@asyn($(PORT),$(CHAN),0)CHANNELINFO")
     field(PINI, "YES")
 }
 
 record(longin, "$(P)ECLAB:DEVCODE")
 {
     field(DTYP, "asynInt32")
-    field(INP, "@asyn($(PORT),0,0)DEVCODE")
+    field(INP, "@asyn($(PORT),$(CHAN),0)DEVCODE")
     field(PINI, "YES")
 }
 
-record(longin, "$(P)ECLAB:FIRMWAREVERS")
+record(longin, "$(P)ECLAB:C$(CHAN):FIRMWAREVERS")
 {
     field(DTYP, "asynInt32")
-    field(INP, "@asyn($(PORT),0,0)FIRMWAREVERS")
+    field(INP, "@asyn($(PORT),$(CHAN),0)FIRMWAREVERS")
     field(PINI, "YES")
 }
 
 record(longin, "$(P)ECLAB:NUMCHANNELS")
 {
     field(DTYP, "asynInt32")
-    field(INP, "@asyn($(PORT),0,0)NUMCHANNELS")
+    field(INP, "@asyn($(PORT),$(CHAN),0)NUMCHANNELS")
     field(SCAN, "I/O Intr")
 }
 
-record(longout, "$(P)ECLAB:LOADTECH:SP")
+record(longout, "$(P)ECLAB:C$(CHAN):LOADTECH:SP")
 {
     field(DTYP, "asynInt32")
-    field(OUT, "@asyn($(PORT),0,0)LOADTECH")
+    field(OUT, "@asyn($(PORT),$(CHAN),0)LOADTECH")
 }
 
-record(stringout, "$(P)ECLAB:DEFINETECH:SP")
+record(stringout, "$(P)ECLAB:C$(CHAN):DEFINETECH:SP")
 {
     field(DTYP, "asynOctetWrite")
-    field(OUT, "@asyn($(PORT),0,0)DEFINETECH")
+    field(OUT, "@asyn($(PORT),$(CHAN),0)DEFINETECH")
 }
 
-record(stringin, "$(P)ECLAB:CHANNELINFO")
-{
-    field(DTYP, "asynOctetRead")
-    field(INP, "@asyn($(PORT),0,0)CHANNELINFO")
-    field(PINI, "YES")
-}
-
-record(longout, "$(P)ECLAB:CHANNELNUM:SP")
+record(longout, "$(P)ECLAB:C$(CHAN):CHANNELNUM:SP")
 {
     field(DTYP, "asynInt32")
-    field(OUT, "@asyn($(PORT),0,0)CHANNELNUM")
+    field(OUT, "@asyn($(PORT),$(CHAN),0)CHANNELNUM")
 }
 
 record(longin, "$(P)ECLAB:DEVID")
 {
     field(DTYP, "asynInt32")
-    field(INP, "@asyn($(PORT),0,0)DEVID")
+    field(INP, "@asyn($(PORT),$(CHAN),0)DEVID")
+    field(PINI, "YES")
+}
+
+record(longin, "$(P)ECLAB:C$(CHAN):STOPCHANNEL" )
+{
+    field(DTYP, "asynInt32")
+    field(INP, "@asyn($(PORT),$(CHAN),0)STOPCHANNEL")
     field(PINI, "YES")
 }

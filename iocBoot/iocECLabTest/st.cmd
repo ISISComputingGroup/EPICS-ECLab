@@ -25,7 +25,7 @@ ECLabConfigure("test", 130.246.36.213)
 < $(IOCSTARTUP)/dbload.cmd
 
 ## Load our record instances
-dbLoadRecords("db/ECLab.db","P=$(MYPVPREFIX),PORT=test")
+dbLoadRecords("db/ECLab.db","P=$(MYPVPREFIX),PORT=test,CHAN=0")
 dbLoadRecords("db/ECLabIntegerParams.db","P=$(MYPVPREFIX),PORT=test,CHAN=0")
 dbLoadRecords("db/ECLabBooleanParams.db","P=$(MYPVPREFIX),PORT=test,CHAN=0")
 dbLoadRecords("db/ECLabSingleParams.db","P=$(MYPVPREFIX),PORT=test,CHAN=0")

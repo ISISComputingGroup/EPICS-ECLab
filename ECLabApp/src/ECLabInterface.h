@@ -78,6 +78,17 @@ struct ECLabInterface
 	{
 		BL_CALL(BL_GetChannelInfos, ID, ch, pInfos);
 	}
+	
+	static void StopChannel (int ID, uint8 channel)
+	{
+		BL_CALL(BL_StopChannel, ID, channel);
+	}
+	
+	static void GetCurrentValues (int ID, uint8 channel, TCurrentValues_t *pValues) 
+	{
+		BL_CALL(BL_GetCurrentValues, ID, channel, pValues);
+	}
+	
 };
 
 #endif /* ECLabInterface_H */
