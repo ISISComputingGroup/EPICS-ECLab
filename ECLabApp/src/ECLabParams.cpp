@@ -1,3 +1,13 @@
+/*************************************************************************\ 
+* Copyright (c) 2013 Science and Technology Facilities Council (STFC), GB. 
+* All rights reverved. 
+* This file is distributed subject to a Software License Agreement found 
+* in the file LICENSE.txt that is included with this distribution. 
+\*************************************************************************/ 
+
+/// @file ECLabParams.cpp
+/// @author Freddie Akeroyd, STFC ISIS Facility, GB
+
 #include <string>
 #include <map>
 #include <iostream>
@@ -23,6 +33,8 @@ static asynParamType ECLabToASYNType(ParamType type)
 	      return asynParamFloat64; 
       case SingleArray:
 	      return asynParamFloat32Array; 
+	  default:
+	      return asynParamInt32;
     }
 }
 

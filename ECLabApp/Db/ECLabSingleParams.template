@@ -1,4 +1,4 @@
-record(ai, "$(P)ECLAB:C$(CHAN):$(TECH):$(PARAM)")
+record(ai, "$(P)ECLAB:C$(CHAN):T:$(TECH):$(PARAM)")
 {
     field(DESC, "$(DESC)")
     field(DTYP, "asynFloat64")
@@ -6,14 +6,13 @@ record(ai, "$(P)ECLAB:C$(CHAN):$(TECH):$(PARAM)")
     field(SCAN, "I/O Intr")
 	field(PREC, 3)
 	field(EGU, "$(EGU)")
-	field(PINI, 1)
 }
 
-record(ao, "$(P)ECLAB:C$(CHAN):$(TECH):$(PARAM):SP")
+record(ao, "$(P)ECLAB:C$(CHAN):T:$(TECH):$(PARAM):SP")
 {
     field(DESC, "$(DESC)")
     field(DTYP, "asynFloat64")
     field(OUT, "@asyn($(PORT),$(CHAN),0)$(TECH)_$(PARAM)")
 	field(PREC, 3)
 	field(EGU, "$(EGU)")
-	field(PINI, 1)}
+}
