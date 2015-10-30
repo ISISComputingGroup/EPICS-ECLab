@@ -38,8 +38,10 @@ private:
 	int P_numChannels;
 	int P_loadTech;
 	int P_channelInfo;
+	int P_currentValues;
 	int P_channelNum;
 	int P_devID;
+	int P_stopChannel;
 	int P_firmwareVers;
 	
 	
@@ -63,5 +65,6 @@ private:
 #define P_channelInfoString "CHANNELINFO"
 #define P_channelNumString "CHANNELNUM"
 #define P_devIDString "DEVID"
-
+#define P_stopChannelString "STOPCHANNEL"
+#define P_currentValuesString "CURRENTVALUES"
 #endif /* ECLABDRIVER_H */

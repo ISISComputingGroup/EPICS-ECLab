@@ -91,6 +91,7 @@ void getTechniqueParams(const std::string& technique, std::vector<TEccParam_t>& 
 		{
 		    values.insert(values.end(), t.value.begin(), t.value.end());
 			t.update = false;
+			printf("I am doing this");
 		}
 	}
 }
