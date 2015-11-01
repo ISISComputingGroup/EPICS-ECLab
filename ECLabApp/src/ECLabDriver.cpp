@@ -36,7 +36,6 @@
 #include <epicsExport.h>
 
 static const char *driverName="ECLabDriver"; ///< Name of driver for use in message printing 
-int g_NUMTECHNIQUES;
 
 #if 0
 asynStatus ECLabDriver::readOctet(asynUser *pasynUser, char *value, size_t maxChars, size_t *nActual, int *eomReason)
@@ -99,24 +98,30 @@ asynStatus ECLabDriver::writeOctet(asynUser *pasynUser, const char *value, size_
 			char* valueCopy = strdup(value_s.c_str()); // as strtok modfies the string
 			char *tok_save = NULL;
 			char * tech = epicsStrtok_r(valueCopy, " ,;", &tok_save); //epics vers of strtok
-			std::vector<std::string> techniques;
+			m_techniques.clear();
 			while (tech != NULL)
 			{
-			    techniques.push_back(tech);
+			    m_techniques.push_back(tech);
 				tech = epicsStrtok_r(NULL, " ,;", &tok_save); 				
 			}
-			free(valueCopy);
-			
+			free(valueCopy);	
 			TEccParams_t params; 
-			for (int i = 0; i < techniques.size(); ++i)
+			for (int i = 0; i < m_techniques.size(); ++i)
 			{
 			    bool first = ( i == 0 );
-				bool last = ( i == (techniques.size() - 1) );
+				bool last = ( i == (m_techniques.size() - 1) );
 				std::vector<TEccParam_t> values;
-				getTechniqueParams(techniques[i], values, false);
-				params.pParams = &(values[0]);
+				getTechniqueParams(m_techniques[i], addr, values, false);
+				if (values.size() > 0)
+				{
+				    params.pParams = &(values[0]);
+				}
+				else
+				{
+					params.pParams = NULL;
+				}
 				params.len = values.size();
-				ECLabInterface::LoadTechnique(m_ID, addr, const_cast<char*>(techniques[i].c_str()), params, first, last, true);
+				ECLabInterface::LoadTechnique(m_ID, addr, const_cast<char*>((m_techniques[i]+".ecc").c_str()), params, first, last, true);
 			}
 		}	
 		asynPortDriver::writeOctet(pasynUser, value, maxChars, nActual);
@@ -142,14 +147,14 @@ asynStatus ECLabDriver::writeFloat64(asynUser *pasynUser, epicsFloat64 value)
 	asynStatus status = asynSuccess;
 	const char *paramName = NULL;
 	getParamName(function, &paramName);
-	const char* functionName = "writeInt32";
+	const char* functionName = "writeFloat64";
 	int addr = 0; // channel number
 	getAddress(pasynUser, &addr);
 	try
 	{
-		setECSingleParam(this, function, value);  // need to include addr at some point
+		setECSingleParam(this, addr, function, value);  // need to include addr at some point
 		asynPrint(pasynUser, ASYN_TRACEIO_DRIVER, 
-			"%s:%s: function=%d, name=%s, value=%d\n", 
+			"%s:%s: function=%d, name=%s, value=%f\n", 
 			driverName, functionName, function, paramName, value);
 		return asynSuccess;
 		
@@ -157,8 +162,8 @@ asynStatus ECLabDriver::writeFloat64(asynUser *pasynUser, epicsFloat64 value)
 	catch(const std::exception& ex)
 	{
 		epicsSnprintf(pasynUser->errorMessage, pasynUser->errorMessageSize, 
-			"%s:%s: status=%d, function=%d, name=%s, value=%s, error=%s", 
-			driverName, functionName, status, function, paramName);
+			"%s:%s: status=%d, function=%d, name=%s, value=%f, error=%s", 
+			driverName, functionName, status, function, paramName, value, ex.what());
 		return asynError;
 	}
 }
@@ -183,9 +188,26 @@ asynStatus ECLabDriver::writeInt32(asynUser *pasynUser, epicsInt32 value)
         {
 			 ECLabInterface::StopChannel(m_ID, addr);
 		}
+		else if (function == P_updateParams)
+		{
+			TEccParams_t params; 
+			for (int i = 0; i < m_techniques.size(); ++i)
+			{
+				std::vector<TEccParam_t> values;
+				getTechniqueParams(m_techniques[i], addr, values, true);
+				int maxupdate = 10; // can only update a maximum of 10 parameters at a time with ECLabInterface::UpdateParameters
+				for(int j=0; j<values.size(); j += maxupdate)
+				{
+					params.pParams = &(values[j]);
+					int n = values.size() - j;
+					params.len = (n > maxupdate ? maxupdate : n);
+				    ECLabInterface::UpdateParameters(m_ID, addr, i, params, const_cast<char*>((m_techniques[i]+".ecc").c_str()));
+				}
+			}
+		}
 		else
 		{
-		    setECIntegerParam(this, function, value);  // need to include addr at some point
+		    setECIntegerParam(this, addr, function, value);  // need to include addr at some point
 		}
 		asynPrint(pasynUser, ASYN_TRACEIO_DRIVER, 
 			"%s:%s: function=%d, name=%s, value=%d\n", 
@@ -196,8 +218,8 @@ asynStatus ECLabDriver::writeInt32(asynUser *pasynUser, epicsInt32 value)
 	catch(const std::exception& ex)
 	{
 		epicsSnprintf(pasynUser->errorMessage, pasynUser->errorMessageSize, 
-			"%s:%s: status=%d, function=%d, name=%s, value=%s, error=%s", 
-			driverName, functionName, status, function, paramName);
+			"%s:%s: status=%d, function=%d, name=%s, value=%d, error=%s", 
+			driverName, functionName, status, function, paramName, value, ex.what());
 		return asynError;
 	}
 }
@@ -206,6 +228,9 @@ asynStatus ECLabDriver::writeInt32(asynUser *pasynUser, epicsInt32 value)
 void ECLabDriver::report(FILE* fp, int details)
 {
 	fprintf(fp, "ECLabDriver report\n");
+	std::ostringstream oss;
+	printParams(oss);
+	fwrite(oss.str().c_str(), 1, oss.str().size(), fp); 
 	asynPortDriver::report(fp, details);
 }
 
@@ -243,6 +268,7 @@ ECLabDriver::ECLabDriver(const char *portName, const char *ip)
 	createParam(P_currFREQString, asynParamFloat64, &P_currFREQ);
 	createParam(P_currSTATEString, asynParamInt32, &P_currSTATE);
 	createParam(P_loadTechString, asynParamOctet, &P_loadTech);
+	createParam(P_updateParamsString, asynParamInt32, &P_updateParams);
 	createParam(P_startChannelString, asynParamInt32, &P_startChannel);
 	createParam(P_stopChannelString, asynParamInt32, &P_stopChannel);
 	

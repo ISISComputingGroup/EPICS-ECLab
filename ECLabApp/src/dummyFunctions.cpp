@@ -81,7 +81,8 @@ static void init_channels()
 	    return -1; \
 	}
 
-#define DEBUG_PRINT(__arg) std::cerr << __arg << std::endl
+//#define DEBUG_PRINT(__arg) std::cerr << __arg << std::endl
+#define DEBUG_PRINT(__arg) 
 
 BIOLOGIC_API(int) BL_GetLibVersion(char*  pVersion, unsigned int* psize)
 {

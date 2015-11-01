@@ -47,10 +47,13 @@ private:
     int P_currFREQ; // float
     int P_currSTATE; // int
 	int P_loadTech; // string
+	int P_updateParams; // int
 	int P_startChannel; // int
 	int P_stopChannel; //int
 	
 	TDeviceInfos_t m_infos;
+	std::vector<std::string> m_techniques;
+
 	int m_ID; // connection ID
 	
 	#define FIRST_ECLAB_PARAM P_version
@@ -77,6 +80,7 @@ private:
 #define  P_currFREQString    "CURR_FREQ"
 #define  P_currSTATEString    "CURR_STATE"
 #define P_loadTechString "LOADTECH"
+#define P_updateParamsString "UPDATE"
 #define P_startChannelString "STARTCHANNEL"
 #define P_stopChannelString "STOPCHANNEL"
 
