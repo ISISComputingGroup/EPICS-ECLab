@@ -1,11 +1,34 @@
+/*************************************************************************\ 
+* Copyright (c) 2013 Science and Technology Facilities Council (STFC), GB. 
+* All rights reverved. 
+* This file is distributed subject to a Software License Agreement found 
+* in the file LICENSE.txt that is included with this distribution. 
+\*************************************************************************/ 
+
+/// @file ECLabParams.cpp
+/// @author Freddie Akeroyd, STFC ISIS Facility, GB
+
 #include <string>
 #include <map>
 #include <iostream>
-
+#include <epicsString.h>
 #include "asynPortDriver.h"
 #include "ECLabParams.h"
 
-techniqueMap_t g_map;
+enum ParamType { Single, Boolean, Integer, SingleArray, BooleanArray, IntegerArray };
+
+struct technique_t 
+{ 
+    bool update; 
+	ParamType type; 
+	std::string technique; 
+	std::string label; 
+	std::vector<TEccParam_t> value; 
+};
+
+typedef std::map<int, technique_t> techniqueMap_t;
+
+static techniqueMap_t g_map;
 
 static asynParamType ECLabToASYNType(ParamType type)
 {
@@ -23,6 +46,8 @@ static asynParamType ECLabToASYNType(ParamType type)
 	      return asynParamFloat64; 
       case SingleArray:
 	      return asynParamFloat32Array; 
+	  default:
+	      return asynParamInt32;
     }
 }
 
@@ -47,9 +72,9 @@ static void addTechParam(asynPortDriver* driver, techniqueMap_t& the_map, const 
 	
 }
 
-void setECIntegerParam(asynPortDriver* driver, int id, epicsInt32 value)
+void setECIntegerParam(asynPortDriver* driver, int addr, int id, epicsInt32 value)
 {
-    driver->setIntegerParam(id, value);
+    driver->setIntegerParam(addr, id, value);
 	technique_t& t = g_map[id];
 	t.update = true;
 	if (t.value.size() == 0)
@@ -66,9 +91,9 @@ void setECIntegerParam(asynPortDriver* driver, int id, epicsInt32 value)
 	}
 }	
 
-void setECSingleParam(asynPortDriver* driver, int id, epicsFloat64 value)
+void setECSingleParam(asynPortDriver* driver, int addr, int id, epicsFloat64 value)
 {
-    driver->setDoubleParam(id, value);
+    driver->setDoubleParam(addr, id, value);
 	technique_t& t = g_map[id];
 	t.update = true;
 	if (t.value.size() == 0)
@@ -78,7 +103,7 @@ void setECSingleParam(asynPortDriver* driver, int id, epicsFloat64 value)
 	BL_DefineSglParameter(t.label.c_str(), static_cast<float>(value), 0, &(t.value[0]));
 }	
 
-void getTechniqueParams(const std::string& technique, std::vector<TEccParam_t>& values, bool changes_only)
+void getTechniqueParams(const std::string& technique, int addr, std::vector<TEccParam_t>& values, bool changes_only)
 {
 	for(techniqueMap_t::iterator it = g_map.begin(); it != g_map.end(); ++it)
 	{	    
@@ -87,11 +112,23 @@ void getTechniqueParams(const std::string& technique, std::vector<TEccParam_t>& 
 		{
 		    continue;
 		}
-		if (t.technique == technique)
+		if ( epicsStrCaseCmp(t.technique.c_str(), technique.c_str()) == 0 )
 		{
 		    values.insert(values.end(), t.value.begin(), t.value.end());
 			t.update = false;
-			printf("I am doing this");
+		}
+	}
+}
+
+void printParams(std::ostream& os)
+{
+	for(techniqueMap_t::iterator it = g_map.begin(); it != g_map.end(); ++it)
+	{	    
+	    technique_t& t = it->second;
+		os << "Technique " << t.technique << " " << t.label << std::endl;
+		for(int i=0; i<t.value.size(); ++i)
+		{
+		    os << t.value[i].ParamStr << std::endl;
 		}
 	}
 }

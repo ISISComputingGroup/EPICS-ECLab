@@ -1,18 +1,16 @@
-record(longin, "$(P)ECLAB:C$(CHAN):$(TECH):$(PARAM)")
+record(longin, "$(P)ECLAB:C$(CHAN):T:$(TECH):$(PARAM)")
 {
     field(DESC, "$(DESC)")
     field(DTYP, "asynInt32")
     field(INP, "@asyn($(PORT),$(CHAN),0)$(TECH)_$(PARAM)")
     field(SCAN, "I/O Intr")
 	field(EGU, "$(EGU)")
-	field(PINI, 1)
 }
 
-record(longout, "$(P)ECLAB:C$(CHAN):$(TECH):$(PARAM):SP")
+record(longout, "$(P)ECLAB:C$(CHAN):T:$(TECH):$(PARAM):SP")
 {
     field(DESC, "$(DESC)")
     field(DTYP, "asynInt32")
     field(OUT, "@asyn($(PORT),$(CHAN),0)$(TECH)_$(PARAM)")
 	field(EGU, "$(EGU)")
-	field(PINI, 1)
 }

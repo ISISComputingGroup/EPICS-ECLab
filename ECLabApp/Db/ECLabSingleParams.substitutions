@@ -3,3 +3,5 @@ pattern { P, CHAN, PORT, TECH, PARAM, LABEL, DESC, EGU }
 { "\$(P)", "\$(CHAN)", "\$(PORT)", "OCV", "RTT", "Rest_time_T", "Rest duration", "s"}
 { "\$(P)", "\$(CHAN)", "\$(PORT)", "OCV", "REDE", "Record_every_dE", "Record every dE", "V"}
 { "\$(P)", "\$(CHAN)", "\$(PORT)", "OCV", "REDT", "Record_every_dT", "Record every dT", "s"}
+{ "\$(P)", "\$(CHAN)", "\$(PORT)", "CA", "REDT", "Record_every_dT", "Record every dT", "s"}
+{ "\$(P)", "\$(CHAN)", "\$(PORT)", "CA", "REDI", "Record_every_dI", "Record every dI", "A"}

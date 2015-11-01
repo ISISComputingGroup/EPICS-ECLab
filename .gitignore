@@ -11,3 +11,5 @@ dllPath.bat
 runIOC.bat
 runIOC.sh
 relPaths.sh
+*_info_positions.req
+*_info_settings.req

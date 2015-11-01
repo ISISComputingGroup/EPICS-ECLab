@@ -63,12 +63,7 @@ struct ECLabInterface
 	{
 		BL_CALL(BL_Disconnect, ID);
 	}
-	
-	static void startChannel(int ID, uint8 channel)
-	{
-		BL_CALL(BL_StartChannel, ID, channel);
-	}
-	
+		
 	static void LoadTechnique(int ID, uint8 channel, char* pFName, TEccParams_t Params, bool FirstTechnique, bool LastTechnique, bool DisplayParams)
 	{
 		BL_CALL(BL_LoadTechnique, ID, channel, pFName, Params, FirstTechnique, LastTechnique, DisplayParams);
@@ -84,9 +79,39 @@ struct ECLabInterface
 		BL_CALL(BL_StopChannel, ID, channel);
 	}
 	
+	static void StartChannel (int ID, uint8 channel)
+	{
+		BL_CALL(BL_StartChannel, ID, channel);
+	}
+
+	static bool IsChannelPlugged( int ID, uint8 ch )
+	{
+		return BL_IsChannelPlugged(ID, ch);
+	}
+
 	static void GetCurrentValues (int ID, uint8 channel, TCurrentValues_t *pValues) 
 	{
 		BL_CALL(BL_GetCurrentValues, ID, channel, pValues);
+	}
+
+    static void UpdateParameters( int ID, uint8 channel, int TechIndx, TEccParams_t Params, const char* EccFileName )
+    {
+		BL_CALL(BL_UpdateParameters, ID, channel, TechIndx, Params, EccFileName);
+    }	
+
+	static void GetData( int ID, uint8 channel, TDataBuffer_t* pBuf, TDataInfos_t* pInfos, TCurrentValues_t* pValues ) 
+    {
+	    BL_CALL(BL_GetData, ID, channel, pBuf, pInfos, pValues);
+	}
+
+	static void SetExperimentInfos( int ID, uint8 channel, TExperimentInfos_t TExpInfos ) 
+	{
+	    BL_CALL(BL_SetExperimentInfos, ID, channel, TExpInfos);
+	}
+	
+	static void GetExperimentInfos( int ID, uint8 channel, TExperimentInfos_t* TExpInfos )
+	{
+	    BL_CALL(BL_GetExperimentInfos, ID, channel, TExpInfos);
 	}
 	
 };
