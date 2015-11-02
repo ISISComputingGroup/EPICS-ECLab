@@ -84,7 +84,7 @@ record(ai, "$(P)ECLAB:C$(CHAN):TIME")
     field(INP, "@asyn($(PORT),$(CHAN),0)CURR_TIME")
 	field(SCAN, "I/O Intr")
 	field(PREC, 3)
-	field(EGU, "S")
+	field(EGU, "s")
 }
 
 record(ai, "$(P)ECLAB:C$(CHAN):RCOMP")
@@ -93,7 +93,7 @@ record(ai, "$(P)ECLAB:C$(CHAN):RCOMP")
     field(INP, "@asyn($(PORT),$(CHAN),0)CURR_RCOMP")
 	field(SCAN, "I/O Intr")
 	field(PREC, 3)
-	field(EGU, "Ohm")
+	field(EGU, "ohm")
 }
 
 record(ai, "$(P)ECLAB:C$(CHAN):FREQ")
