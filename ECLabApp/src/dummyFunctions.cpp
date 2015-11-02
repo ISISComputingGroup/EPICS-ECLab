@@ -9,10 +9,14 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include <BLFunctions.h>
+
 #include <epicsStdio.h>
 
+#include "ECLabInterface.h"
+
 static int my_connection_id = 2382312;
+
+bool ECLabInterface::BLSIM = false;
 
 struct MyTechnique
 {
@@ -84,7 +88,7 @@ static void init_channels()
 //#define DEBUG_PRINT(__arg) std::cerr << __arg << std::endl
 #define DEBUG_PRINT(__arg) 
 
-BIOLOGIC_API(int) BL_GetLibVersion(char*  pVersion, unsigned int* psize)
+BIOLOGIC_API(int) BL_GetLibVersionStub(char*  pVersion, unsigned int* psize)
 {
     DEBUG_PRINT("BL_GetLibVersion");
     static const char* version = "5.34.0.1";
@@ -94,26 +98,26 @@ BIOLOGIC_API(int) BL_GetLibVersion(char*  pVersion, unsigned int* psize)
 	return 0;
 }
 
-BIOLOGIC_API(int) BL_GetErrorMsg( int errorcode, char*  pmsg, unsigned int* psize ) 
-{
-    DEBUG_PRINT("BL_GetErrorMsg");
-    if (errorcode == 0)
-	{
-	    strncpy(pmsg, "No ERROR", *psize);
-        return 0; 
-	}
-	else if (errorcode < 0)
-	{
-	    epicsSnprintf(pmsg, *psize, "Dummy Error code %d", errorcode);
-		return 0;
-	}
-	else
-	{
-		return -1;
-	}
-}
+//BIOLOGIC_API(int) BL_GetErrorMsgStub( int errorcode, char*  pmsg, unsigned int* psize ) 
+//{
+//    DEBUG_PRINT("BL_GetErrorMsg");
+//    if (errorcode == 0)
+//	{
+//	    strncpy(pmsg, "No ERROR", *psize);
+//       return 0; 
+//	}
+//	else if (errorcode < 0)
+//	{
+//	    epicsSnprintf(pmsg, *psize, "Dummy Error code %d", errorcode);
+//		return 0;
+//	}
+//	else
+//	{
+//		return -1;
+//	}
+//}
 
-BIOLOGIC_API(int) BL_Connect(const char* address, uint8 timeout, int* pID, TDeviceInfos_t* pInfos) 
+BIOLOGIC_API(int) BL_ConnectStub(const char* address, uint8 timeout, int* pID, TDeviceInfos_t* pInfos) 
 {
     DEBUG_PRINT("BL_Connect");
 	*pID = my_connection_id;
@@ -124,14 +128,14 @@ BIOLOGIC_API(int) BL_Connect(const char* address, uint8 timeout, int* pID, TDevi
 	return 0;
 }
 
-BIOLOGIC_API(int) BL_TestConnection(int ID)
+BIOLOGIC_API(int) BL_TestConnectionStub(int ID)
 {
-    DEBUG_PRINT("BL_GetLibVersion");
+    DEBUG_PRINT("BL_TestConnection");
 	CHECK_CONNECTION_ID(ID);
 	return 0;
 }
 
-BIOLOGIC_API(int) BL_Disconnect(int ID)
+BIOLOGIC_API(int) BL_DisconnectStub(int ID)
 {
     DEBUG_PRINT("BL_Disconnect");
     if (ID == my_connection_id)
@@ -145,7 +149,7 @@ BIOLOGIC_API(int) BL_Disconnect(int ID)
 	}
 }
 
-BIOLOGIC_API(bool) BL_IsChannelPlugged( int ID, uint8 ch ) 
+BIOLOGIC_API(bool) BL_IsChannelPluggedStub( int ID, uint8 ch ) 
 { 
     DEBUG_PRINT("BL_IsChannelPlugged");
     if (ID == my_connection_id)
@@ -158,7 +162,7 @@ BIOLOGIC_API(bool) BL_IsChannelPlugged( int ID, uint8 ch )
 	}
 }
 
-BIOLOGIC_API(int) BL_GetChannelsPlugged ( int ID, uint8* pChPlugged, uint8 Size ) 
+BIOLOGIC_API(int) BL_GetChannelsPluggedStub ( int ID, uint8* pChPlugged, uint8 Size ) 
 {
     DEBUG_PRINT("BL_GetChannelsPlugged");
 	CHECK_CONNECTION_ID(ID);
@@ -173,7 +177,7 @@ BIOLOGIC_API(int) BL_GetChannelsPlugged ( int ID, uint8* pChPlugged, uint8 Size 
     return 0; 
 }
 
-BIOLOGIC_API(int) BL_GetChannelInfos( int ID, uint8 ch, TChannelInfos_t* pInfos ) 
+BIOLOGIC_API(int) BL_GetChannelInfosStub( int ID, uint8 ch, TChannelInfos_t* pInfos ) 
 { 
     DEBUG_PRINT("BL_GetChannelInfos");
 	CHECK_CONNECTION_ID(ID);
@@ -183,7 +187,7 @@ BIOLOGIC_API(int) BL_GetChannelInfos( int ID, uint8 ch, TChannelInfos_t* pInfos 
 }
 
 
-BIOLOGIC_API(int) BL_LoadTechnique(int ID, uint8 channel, const char* pFName, TEccParams_t Params, bool FirstTechnique, bool LastTechnique, bool DisplayParams)
+BIOLOGIC_API(int) BL_LoadTechniqueStub(int ID, uint8 channel, const char* pFName, TEccParams_t Params, bool FirstTechnique, bool LastTechnique, bool DisplayParams)
 {
     DEBUG_PRINT("BL_LoadTechnique");
 	CHECK_CONNECTION_ID(ID);
@@ -202,7 +206,7 @@ BIOLOGIC_API(int) BL_LoadTechnique(int ID, uint8 channel, const char* pFName, TE
 	return 0;
 }
 
-BIOLOGIC_API(int) BL_UpdateParameters( int ID, uint8 channel, int TechIndx, TEccParams_t Params, const char* EccFileName ) 
+BIOLOGIC_API(int) BL_UpdateParametersStub( int ID, uint8 channel, int TechIndx, TEccParams_t Params, const char* EccFileName ) 
 { 
     DEBUG_PRINT("BL_UpdateParameters");
 	CHECK_CONNECTION_ID(ID);
@@ -216,7 +220,7 @@ BIOLOGIC_API(int) BL_UpdateParameters( int ID, uint8 channel, int TechIndx, TEcc
     return 0; 
 }
 
-BIOLOGIC_API(int) BL_StartChannel (int ID, uint8 channel)
+BIOLOGIC_API(int) BL_StartChannelStub (int ID, uint8 channel)
 {
     DEBUG_PRINT("BL_StartChannel");
 	CHECK_CONNECTION_ID(ID);
@@ -226,7 +230,7 @@ BIOLOGIC_API(int) BL_StartChannel (int ID, uint8 channel)
     return 0; 
 }
 
-BIOLOGIC_API(int) BL_StopChannel (int ID, uint8 channel)
+BIOLOGIC_API(int) BL_StopChannelStub (int ID, uint8 channel)
 {
     DEBUG_PRINT("BL_StopChannel");
 	CHECK_CONNECTION_ID(ID);
@@ -235,7 +239,7 @@ BIOLOGIC_API(int) BL_StopChannel (int ID, uint8 channel)
     return 0; 
 }
 
-BIOLOGIC_API(int) BL_GetCurrentValues (int ID, uint8 channel, TCurrentValues_t *pValues) 
+BIOLOGIC_API(int) BL_GetCurrentValuesStub (int ID, uint8 channel, TCurrentValues_t *pValues) 
 {
     DEBUG_PRINT("BL_GetCurrentValues");
 	CHECK_CONNECTION_ID(ID);
@@ -247,7 +251,7 @@ BIOLOGIC_API(int) BL_GetCurrentValues (int ID, uint8 channel, TCurrentValues_t *
 }
 
 
-BIOLOGIC_API(int) BL_GetData( int ID, uint8 channel, TDataBuffer_t* pBuf, TDataInfos_t* pInfos, TCurrentValues_t* pValues ) 
+BIOLOGIC_API(int) BL_GetDataStub( int ID, uint8 channel, TDataBuffer_t* pBuf, TDataInfos_t* pInfos, TCurrentValues_t* pValues ) 
 { 
     DEBUG_PRINT("BL_GetData");
 	CHECK_CONNECTION_ID(ID);
@@ -255,7 +259,7 @@ BIOLOGIC_API(int) BL_GetData( int ID, uint8 channel, TDataBuffer_t* pBuf, TDataI
     return 0; 
 }
 
-BIOLOGIC_API(int) BL_SetExperimentInfos( int ID, uint8 channel, TExperimentInfos_t TExpInfos ) 
+BIOLOGIC_API(int) BL_SetExperimentInfosStub( int ID, uint8 channel, TExperimentInfos_t TExpInfos ) 
 { 
     DEBUG_PRINT("BL_SetExperimentInfos");
 	CHECK_CONNECTION_ID(ID);
@@ -263,7 +267,7 @@ BIOLOGIC_API(int) BL_SetExperimentInfos( int ID, uint8 channel, TExperimentInfos
     return 0; 
 }
 
-BIOLOGIC_API(int) BL_GetExperimentInfos( int ID, uint8 channel, TExperimentInfos_t* TExpInfos )
+BIOLOGIC_API(int) BL_GetExperimentInfosStub( int ID, uint8 channel, TExperimentInfos_t* TExpInfos )
 { 
     DEBUG_PRINT("BL_GetExperimentInfos");
 	CHECK_CONNECTION_ID(ID);

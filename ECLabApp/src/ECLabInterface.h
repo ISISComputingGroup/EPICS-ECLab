@@ -9,6 +9,10 @@
 #include <sstream>
 #include <BLFunctions.h>
 
+#include "BLFunctionsStub.h"
+
+#define BLCONCAT(A,B) A##B
+
 /// encapsulates an EC lab error code as an exception object
 class ECLabException : public std::runtime_error
 {
@@ -34,7 +38,15 @@ class ECLabException : public std::runtime_error
 
 /// call an ECLab function, converting error into an exception 
 #define BL_CALL(__func, ... ) \
-    int status = __func ( __VA_ARGS__ ); \
+    int status; \
+    if (BLSIM) \
+    { \
+        status = BLCONCAT(__func,Stub) ( __VA_ARGS__ ); \
+	} \
+	else \
+	{ \
+        status = __func ( __VA_ARGS__ ); \
+	} \
     if ( status != 0 ) \
 	{ \
 	    throw ECLabException(#__func, status); \
@@ -44,6 +56,8 @@ class ECLabException : public std::runtime_error
 /// the error code into an exception
 struct ECLabInterface
 {
+    static bool BLSIM;
+	
     static void GetLibVersion(char*  pVersion, unsigned int* psize)
 	{
 	    BL_CALL(BL_GetLibVersion, pVersion, psize);	
@@ -86,7 +100,14 @@ struct ECLabInterface
 
 	static bool IsChannelPlugged( int ID, uint8 ch )
 	{
-		return BL_IsChannelPlugged(ID, ch);
+	    if (BLSIM)
+		{
+		    return BL_IsChannelPluggedStub(ID, ch);
+		}
+		else
+		{
+		    return BL_IsChannelPlugged(ID, ch);
+		}
 	}
 
 	static void GetCurrentValues (int ID, uint8 channel, TCurrentValues_t *pValues) 
@@ -115,5 +136,7 @@ struct ECLabInterface
 	}
 	
 };
+
+#undef BLCONCAT
 
 #endif /* ECLabInterface_H */

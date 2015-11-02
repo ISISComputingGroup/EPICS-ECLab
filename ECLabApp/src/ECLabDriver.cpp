@@ -273,11 +273,29 @@ ECLabDriver::ECLabDriver(const char *portName, const char *ip)
 	createParam(P_stopChannelString, asynParamInt32, &P_stopChannel);
 	
     setStringParam(P_version, "unknown");
+    setStringParam(P_host, "unknown");
 	setIntegerParam(P_devCode, KBIO_DEV_UNKNOWN);
-	setIntegerParam(P_numChannels, 1);
+	setIntegerParam(P_numChannels, 0);
+	setIntegerParam(P_numSlots, 0);
 	
 	addAllParameters(this);
 	
+	if ( !strcmp(ip, "SIM") )
+	{
+	    ECLabInterface::BLSIM = true;
+	}
+	
+	char version[32];
+	unsigned ver_size = sizeof(version);
+	ECLabInterface::GetLibVersion(version, &ver_size);
+	setStringParam(P_version, version);
+	unsigned int timeout = 5;
+	ECLabInterface::Connect(const_cast<char *>(ip), timeout, &m_ID, &m_infos);
+	ECLabInterface::testConnect(m_ID);
+	setStringParam(P_host, ip);
+	setIntegerParam(P_devCode, m_infos.DeviceCode);
+	setIntegerParam(P_numChannels, m_infos.NumberOfChannels);
+	setIntegerParam(P_numSlots, m_infos.NumberOfSlots);
 	// Create the thread for background tasks (not used at present, could be used for I/O intr scanning) 
 	if (epicsThreadCreate("ECLabDriverTask",
 		epicsThreadPriorityMedium,
@@ -287,17 +305,6 @@ ECLabDriver::ECLabDriver(const char *portName, const char *ip)
 		printf("%s:%s: epicsThreadCreate failure\n", driverName, functionName);
 		return;
 	}
-	char version[32];
-	unsigned ver_size = sizeof(version);
-	ECLabInterface::GetLibVersion(version, &ver_size);
-	setStringParam(P_version, version);
-	setStringParam(P_host, ip);
-	unsigned int timeout = 5;
-	ECLabInterface::Connect(const_cast<char *>(ip), timeout, &m_ID, &m_infos);
-	setIntegerParam(P_devCode, m_infos.DeviceCode);
-	setIntegerParam(P_numChannels, m_infos.NumberOfChannels);
-	setIntegerParam(P_numSlots, m_infos.NumberOfSlots);
-	ECLabInterface::testConnect(m_ID);
 }
 
 /// @todo Might use this for background polling if implementing I/O Intr scanning
@@ -314,6 +321,8 @@ void ECLabDriver::ECLabTask()
 {
     TCurrentValues_t cvals;
 	TChannelInfos_t cinfo;
+//	uint32_t len_buffer;
+//	char buffer[256];
     while(true)
     {
 	    for(int i=0; i<m_infos.NumberOfChannels; ++i)
@@ -322,6 +331,9 @@ void ECLabDriver::ECLabTask()
 			{
 			    ECLabInterface::GetCurrentValues(m_ID, i, &cvals);
 				ECLabInterface::GetChannelInfos(m_ID, i, &cinfo);
+//				len_buffer = sizeof(buffer);
+//				memset(buffer, 0, len_buffer);
+//				ECLabInterface::GetMessage(m_ID, i, buffer, &len_buffer);				
 				lock();
 				setIntegerParam(i, P_memFilled, cvals.MemFilled);
 				setDoubleParam(i, P_currEWE, cvals.Ewe);
@@ -332,6 +344,10 @@ void ECLabDriver::ECLabTask()
 				setDoubleParam(i, P_currFREQ, cvals.Freq);
 				setIntegerParam(i, P_currSTATE, cvals.State);
 				setIntegerParam(i, P_numTech, cinfo.NbOfTechniques);
+//				if (len_buffer > 0)
+//				{
+//				    std::cerr << buffer << std::endl;
+//				}
                 callParamCallbacks();
 		        unlock();
 			}
