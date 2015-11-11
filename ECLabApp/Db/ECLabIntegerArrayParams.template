@@ -1,4 +1,4 @@
-record(waveform, "$(P)ECLAB:C$(CHAN):T:$(TECH):$(PARAM)")
+record(waveform, "$(P)$(Q):C$(CHAN):T:$(TECH):$(PARAM)")
 {
     field(DESC, "$(DESC)")
     field(DTYP, "asynInt32ArrayIn")
@@ -9,7 +9,7 @@ record(waveform, "$(P)ECLAB:C$(CHAN):T:$(TECH):$(PARAM)")
     field(SCAN, "I/O Intr")
 }
 
-record(waveform, "$(P)ECLAB:C$(CHAN):T:$(TECH):$(PARAM):SP")
+record(waveform, "$(P)$(Q):C$(CHAN):T:$(TECH):$(PARAM):SP")
 {
     field(DESC, "$(DESC)")
     field(DTYP, "asynInt32ArrayOut")

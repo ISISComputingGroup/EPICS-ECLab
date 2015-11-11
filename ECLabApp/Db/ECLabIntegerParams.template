@@ -1,4 +1,4 @@
-record(longin, "$(P)ECLAB:C$(CHAN):T:$(TECH):$(PARAM)")
+record(longin, "$(P)$(Q):C$(CHAN):T:$(TECH):$(PARAM)")
 {
     field(DESC, "$(DESC)")
     field(DTYP, "asynInt32")
@@ -7,7 +7,7 @@ record(longin, "$(P)ECLAB:C$(CHAN):T:$(TECH):$(PARAM)")
 	field(EGU, "$(EGU)")
 }
 
-record(longout, "$(P)ECLAB:C$(CHAN):T:$(TECH):$(PARAM):SP")
+record(longout, "$(P)$(Q):C$(CHAN):T:$(TECH):$(PARAM):SP")
 {
     field(DESC, "$(DESC)")
     field(DTYP, "asynInt32")

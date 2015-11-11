@@ -77,7 +77,13 @@ struct ECLabInterface
 	{
 		BL_CALL(BL_Disconnect, ID);
 	}
-		
+	
+    static void LoadFirmware(int ID, uint8* pChannels, int* pResults, uint8 Length, 
+                             bool ShowGauge, bool ForceReload, const char* BinFile, const char* XlxFile)
+    {
+	    BL_CALL(BL_LoadFirmware, ID, pChannels, pResults, Length, ShowGauge, ForceReload, BinFile, XlxFile);
+    }
+	
 	static void LoadTechnique(int ID, uint8 channel, char* pFName, TEccParams_t Params, bool FirstTechnique, bool LastTechnique, bool DisplayParams)
 	{
 		BL_CALL(BL_LoadTechnique, ID, channel, pFName, Params, FirstTechnique, LastTechnique, DisplayParams);

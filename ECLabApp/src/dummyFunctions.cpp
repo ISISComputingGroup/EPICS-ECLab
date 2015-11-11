@@ -149,6 +149,12 @@ BIOLOGIC_API(int) BL_DisconnectStub(int ID)
 	}
 }
 
+BIOLOGIC_API(int) BL_LoadFirmwareStub( int ID, uint8* pChannels, int* pResults, uint8 Length, 
+                             bool ShowGauge, bool ForceReload, const char* BinFile, const char* XlxFile)
+{
+	return 0;
+}
+
 BIOLOGIC_API(bool) BL_IsChannelPluggedStub( int ID, uint8 ch ) 
 { 
     DEBUG_PRINT("BL_IsChannelPlugged");
@@ -272,6 +278,7 @@ BIOLOGIC_API(int) BL_GetExperimentInfosStub( int ID, uint8 channel, TExperimentI
     DEBUG_PRINT("BL_GetExperimentInfos");
 	CHECK_CONNECTION_ID(ID);
 	CHECK_CHANNEL(channel);
+	memset(TExpInfos, 0, sizeof(TExperimentInfos_t));
     return 0; 
 }
 

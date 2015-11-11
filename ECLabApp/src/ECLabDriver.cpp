@@ -17,6 +17,7 @@
 #include <iostream>
 #include <map>
 #include <vector>
+#include <algorithm>
 
 #include <epicsTypes.h>
 #include <epicsTime.h>
@@ -27,6 +28,7 @@
 #include <epicsEvent.h>
 #include <errlog.h>
 #include <iocsh.h>
+#include <macLib.h>
 
 #include "BLFunctions.h"
 #include "ECLabInterface.h"
@@ -83,6 +85,7 @@ asynStatus ECLabDriver::readOctet(asynUser *pasynUser, char *value, size_t maxCh
 
 asynStatus ECLabDriver::writeOctet(asynUser *pasynUser, const char *value, size_t maxChars, size_t *nActual) 
 {
+	static const std::string ecc_dir = macEnvExpand("$(ECLAB)/ecc/");
 	int function = pasynUser->reason;
 	asynStatus status = asynSuccess;
 	const char *paramName = NULL;
@@ -121,7 +124,9 @@ asynStatus ECLabDriver::writeOctet(asynUser *pasynUser, const char *value, size_
 					params.pParams = NULL;
 				}
 				params.len = values.size();
-				ECLabInterface::LoadTechnique(m_ID, addr, const_cast<char*>((m_techniques[i]+".ecc").c_str()), params, first, last, true);
+				std::string ecc_file = ecc_dir + m_techniques[i] + "4.ecc";
+				std::replace(ecc_file.begin(), ecc_file.end(), '/', '\\');
+				ECLabInterface::LoadTechnique(m_ID, addr, const_cast<char*>(ecc_file.c_str()), params, first, last, false);
 			}
 		}	
 		asynPortDriver::writeOctet(pasynUser, value, maxChars, nActual);
@@ -170,6 +175,7 @@ asynStatus ECLabDriver::writeFloat64(asynUser *pasynUser, epicsFloat64 value)
 
 asynStatus ECLabDriver::writeInt32(asynUser *pasynUser, epicsInt32 value)
 {
+	static const std::string ecc_dir = macEnvExpand("$(ECLAB)/ecc/");
 	int function = pasynUser->reason;
 	asynStatus status = asynSuccess;
 	const char *paramName = NULL;
@@ -186,7 +192,10 @@ asynStatus ECLabDriver::writeInt32(asynUser *pasynUser, epicsInt32 value)
         }
 		else if (function == P_stopChannel)
         {
-			 ECLabInterface::StopChannel(m_ID, addr);
+			ECLabInterface::StopChannel(m_ID, addr);
+//			TExperimentInfos_t TExpInfos;
+//			ECLabInterface::GetExperimentInfos(m_ID, addr, &TExpInfos );
+//			std::cerr << "Exp info time " << TExpInfos.TimeHMS << " filename " << TExpInfos.Filename << std::endl;
 		}
 		else if (function == P_updateParams)
 		{
@@ -201,7 +210,9 @@ asynStatus ECLabDriver::writeInt32(asynUser *pasynUser, epicsInt32 value)
 					params.pParams = &(values[j]);
 					int n = values.size() - j;
 					params.len = (n > maxupdate ? maxupdate : n);
-				    ECLabInterface::UpdateParameters(m_ID, addr, i, params, const_cast<char*>((m_techniques[i]+".ecc").c_str()));
+					std::string ecc_file = ecc_dir + m_techniques[i] + "4.ecc";
+					std::replace(ecc_file.begin(), ecc_file.end(), '/', '\\');
+				    ECLabInterface::UpdateParameters(m_ID, addr, i, params, const_cast<char*>(ecc_file.c_str()));
 				}
 			}
 		}
@@ -242,7 +253,7 @@ void ECLabDriver::report(FILE* fp, int details)
 ECLabDriver::ECLabDriver(const char *portName, const char *ip) 
 	: asynPortDriver(portName, 
 	16, /* maxAddr */ 
-	NUM_ECLAB_PARAMS + 50,
+	NUM_ECLAB_PARAMS + 100,
 	asynInt32Mask | asynInt32ArrayMask | asynInt8ArrayMask | asynFloat64Mask | asynFloat32ArrayMask | asynOctetMask | asynDrvUserMask, /* Interface mask */
 	asynInt32Mask | asynInt32ArrayMask | asynInt8ArrayMask | asynFloat64Mask | asynFloat32ArrayMask | asynOctetMask,  /* Interrupt mask */
 	ASYN_CANBLOCK, /* asynFlags.  This driver can block but it is not multi-device */
@@ -252,6 +263,7 @@ ECLabDriver::ECLabDriver(const char *portName, const char *ip)
 	
 {
 	const char *functionName = "ECLabDriver";
+	static const std::string ecc_dir = macEnvExpand("$(ECLAB)/ecc/");
 	
 	createParam(P_versionString, asynParamOctet, &P_version);
 	createParam(P_hostString, asynParamOctet, &P_host);
@@ -292,6 +304,15 @@ ECLabDriver::ECLabDriver(const char *portName, const char *ip)
 	unsigned int timeout = 5;
 	ECLabInterface::Connect(const_cast<char *>(ip), timeout, &m_ID, &m_infos);
 	ECLabInterface::testConnect(m_ID);
+
+	uint8 chan = 1;
+	int res;
+	std::string kernel_file = ecc_dir + "kernel4.bin";
+	std::replace(kernel_file.begin(), kernel_file.end(), '/', '\\');
+	std::string xlx_file = ecc_dir + "Vmp_iv_0395_aa.xlx";
+	std::replace(xlx_file.begin(), xlx_file.end(), '/', '\\');
+	ECLabInterface::LoadFirmware(m_ID, &chan, &res, 1, 0, 0, kernel_file.c_str(), xlx_file.c_str());
+
 	setStringParam(P_host, ip);
 	setIntegerParam(P_devCode, m_infos.DeviceCode);
 	setIntegerParam(P_numChannels, m_infos.NumberOfChannels);
@@ -329,8 +350,15 @@ void ECLabDriver::ECLabTask()
 		{
 		    if (ECLabInterface::IsChannelPlugged(m_ID, i))
 			{
-			    ECLabInterface::GetCurrentValues(m_ID, i, &cvals);
-				ECLabInterface::GetChannelInfos(m_ID, i, &cinfo);
+				try
+				{
+					ECLabInterface::GetChannelInfos(m_ID, i, &cinfo);
+			        ECLabInterface::GetCurrentValues(m_ID, i, &cvals);
+				}
+				catch(const std::exception& ex)
+				{
+					errlogSevPrintf(errlogInfo, "%s", ex.what());
+				}
 //				len_buffer = sizeof(buffer);
 //				memset(buffer, 0, len_buffer);
 //				ECLabInterface::GetMessage(m_ID, i, buffer, &len_buffer);				

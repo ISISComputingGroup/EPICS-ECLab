@@ -1,11 +1,11 @@
 # LABEL is parameter name in ECLab, PARAM is name withing ASYN/EPICS DB
 # every technique can have I_Range, E_Range and Bandwidth
-pattern { P, CHAN, PORT, TECH, PARAM, LABEL, DESC, EGU }
-{ "\$(P)", "\$(CHAN)", "\$(PORT)", "CA", "NSTEPS", "Step_number", "Number of steps minus 1", "" }
-{ "\$(P)", "\$(CHAN)", "\$(PORT)", "CA", "NCYCLES", "N_Cycles", "Number of times repeated", "" }
-{ "\$(P)", "\$(CHAN)", "\$(PORT)", "LOOP", "NLOOP", "loop_N_times", "Loop N times", "" }
-{ "\$(P)", "\$(CHAN)", "\$(PORT)", "LOOP", "PROT", "protocol_number", "technique index to be linked", "" }
-{ "\$(P)", "\$(CHAN)", "\$(PORT)", "TO", "LOGIC", "Trigger_Logic", "Trigger out level", "" }
-{ "\$(P)", "\$(CHAN)", "\$(PORT)", "TO", "DUR", "Trigger_Duration", "Trigger out duration", "s" }
-{ "\$(P)", "\$(CHAN)", "\$(PORT)", "TI", "LOGIC", "Trigger_Logic", "Trigger in level", "" }
-{ "\$(P)", "\$(CHAN)", "\$(PORT)", "TOS", "LOGIC", "Trigger_Logic", "Trigger out value", "" }
+pattern { P, Q, CHAN, PORT, TECH, PARAM, LABEL, DESC, EGU }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CA", "NSTEPS", "Step_number", "Number of steps minus 1", "" }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CA", "NCYCLES", "N_Cycles", "Number of times repeated", "" }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "LOOP", "NLOOP", "loop_N_times", "Loop N times", "" }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "LOOP", "PROT", "protocol_number", "technique index to be linked", "" }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "TO", "LOGIC", "Trigger_Logic", "Trigger out level", "" }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "TO", "DUR", "Trigger_Duration", "Trigger out duration", "s" }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "TI", "LOGIC", "Trigger_Logic", "Trigger in level", "" }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "TOS", "LOGIC", "Trigger_Logic", "Trigger out value", "" }

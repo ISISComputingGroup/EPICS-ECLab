@@ -1,4 +1,4 @@
 # LABEL is parameter name in ECLab, PARAM is name withing ASYN/EPICS DB
-pattern { P, CHAN, PORT, TECH, PARAM, LABEL, DESC, EGU, NELM }
-{ "\$(P)", "\$(CHAN)", "\$(PORT)", "CA", "VSTEP", "Voltage_step", "Voltage step", "V", 100 }
-{ "\$(P)", "\$(CHAN)", "\$(PORT)", "CA", "DURSTEP", "Duration_step", "Duration step", "s", 100 }
+pattern { P, Q, CHAN, PORT, TECH, PARAM, LABEL, DESC, EGU, NELM }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CA", "VSTEP", "Voltage_step", "Voltage step", "V", 100 }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CA", "DURSTEP", "Duration_step", "Duration step", "s", 100 }

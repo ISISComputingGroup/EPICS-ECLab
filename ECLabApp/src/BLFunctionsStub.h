@@ -9,6 +9,9 @@ BIOLOGIC_API(int) BL_TestConnectionStub(int ID);
 
 BIOLOGIC_API(int) BL_DisconnectStub(int ID);
 
+BIOLOGIC_API(int) BL_LoadFirmwareStub( int ID, uint8* pChannels, int* pResults, uint8 Length, 
+                             bool ShowGauge, bool ForceReload, const char* BinFile, const char* XlxFile);
+							 
 BIOLOGIC_API(bool) BL_IsChannelPluggedStub( int ID, uint8 ch ); 
 
 BIOLOGIC_API(int) BL_GetChannelsPluggedStub ( int ID, uint8* pChPlugged, uint8 Size ); 

@@ -1,4 +1,4 @@
-record(bi, "$(P)ECLAB:C$(CHAN):T:$(TECH):$(PARAM)")
+record(bi, "$(P)$(Q):C$(CHAN):T:$(TECH):$(PARAM)")
 {
     field(DESC, "$(DESC)")
     field(DTYP, "asynInt32")
@@ -6,7 +6,7 @@ record(bi, "$(P)ECLAB:C$(CHAN):T:$(TECH):$(PARAM)")
     field(SCAN, "I/O Intr")
 }
 
-record(bo, "$(P)ECLAB:C$(CHAN):T:$(TECH):$(PARAM):SP")
+record(bo, "$(P)$(Q):C$(CHAN):T:$(TECH):$(PARAM):SP")
 {
     field(DESC, "$(DESC)")
     field(DTYP, "asynInt32")

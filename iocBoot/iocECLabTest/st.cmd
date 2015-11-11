@@ -27,13 +27,13 @@ ECLabConfigure("test", "SIM")
 < $(IOCSTARTUP)/dbload.cmd
 
 ## Load our record instances
-dbLoadRecords("db/ECLab.db","P=$(MYPVPREFIX),PORT=test,CHAN=0")
-dbLoadRecords("db/ECLabIntegerParams.db","P=$(MYPVPREFIX),PORT=test,CHAN=0")
-dbLoadRecords("db/ECLabBooleanParams.db","P=$(MYPVPREFIX),PORT=test,CHAN=0")
-dbLoadRecords("db/ECLabSingleParams.db","P=$(MYPVPREFIX),PORT=test,CHAN=0")
-dbLoadRecords("db/ECLabIntegerArrayParams.db","P=$(MYPVPREFIX),PORT=test,CHAN=0")
-dbLoadRecords("db/ECLabBooleanArrayParams.db","P=$(MYPVPREFIX),PORT=test,CHAN=0")
-dbLoadRecords("db/ECLabSingleArrayParams.db","P=$(MYPVPREFIX),PORT=test,CHAN=0")
+dbLoadRecords("db/ECLab.db","P=$(MYPVPREFIX),Q=ECLAB,PORT=test,CHAN=0")
+dbLoadRecords("db/ECLabIntegerParams.db","P=$(MYPVPREFIX),Q=ECLAB,PORT=test,CHAN=0")
+dbLoadRecords("db/ECLabBooleanParams.db","P=$(MYPVPREFIX),Q=ECLAB,PORT=test,CHAN=0")
+dbLoadRecords("db/ECLabSingleParams.db","P=$(MYPVPREFIX),Q=ECLAB,PORT=test,CHAN=0")
+dbLoadRecords("db/ECLabIntegerArrayParams.db","P=$(MYPVPREFIX),Q=ECLAB,PORT=test,CHAN=0")
+dbLoadRecords("db/ECLabBooleanArrayParams.db","P=$(MYPVPREFIX),Q=ECLAB,PORT=test,CHAN=0")
+dbLoadRecords("db/ECLabSingleArrayParams.db","P=$(MYPVPREFIX),Q=ECLAB,PORT=test,CHAN=0")
 
 ##ISIS## Stuff that needs to be done after all records are loaded but before iocInit is called 
 < $(IOCSTARTUP)/preiocinit.cmd

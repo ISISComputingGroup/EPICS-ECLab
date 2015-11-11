@@ -1,34 +1,34 @@
 # device specific
 
-record(stringin, "$(P)ECLAB:VERSION")
+record(stringin, "$(P)$(Q):VERSION")
 {
     field(DTYP, "asynOctetRead")
     field(INP, "@asyn($(PORT),$(CHAN),0)VERSION")
     field(PINI, "YES")
 }
 
-record(stringin, "$(P)ECLAB:HOST")
+record(stringin, "$(P)$(Q):HOST")
 {
     field(DTYP, "asynOctetRead")
     field(INP, "@asyn($(PORT),$(CHAN),0)HOST")
     field(PINI, "YES")
 }
 
-record(longin, "$(P)ECLAB:DEVCODE")
+record(longin, "$(P)$(Q):DEVCODE")
 {
     field(DTYP, "asynInt32")
     field(INP, "@asyn($(PORT),$(CHAN),0)DEVCODE")
     field(PINI, "YES")
 }
 
-record(longin, "$(P)ECLAB:NUMCHANNELS")
+record(longin, "$(P)$(Q):NUMCHANNELS")
 {
     field(DTYP, "asynInt32")
     field(INP, "@asyn($(PORT),$(CHAN),0)NUMCHANNELS")
     field(PINI, "YES")
 }
 
-record(longin, "$(P)ECLAB:NUMSLOTS")
+record(longin, "$(P)$(Q):NUMSLOTS")
 {
     field(DTYP, "asynInt32")
     field(INP, "@asyn($(PORT),$(CHAN),0)NUMSLOTS")
@@ -37,21 +37,21 @@ record(longin, "$(P)ECLAB:NUMSLOTS")
 
 # channel specific current information
 
-record(longin, "$(P)ECLAB:C$(CHAN):NUMTECH" )
+record(longin, "$(P)$(Q):C$(CHAN):NUMTECH" )
 {
     field(DTYP, "asynInt32")
     field(INP, "@asyn($(PORT),$(CHAN),0)NUMTECH")
 	field(SCAN, "I/O Intr")
 }
 
-record(longin, "$(P)ECLAB:C$(CHAN):MEMFILLED" )
+record(longin, "$(P)$(Q):C$(CHAN):MEMFILLED" )
 {
     field(DTYP, "asynInt32")
     field(INP, "@asyn($(PORT),$(CHAN),0)MEMFILLED")
 	field(SCAN, "I/O Intr")
 }
 
-record(ai, "$(P)ECLAB:C$(CHAN):EWE")
+record(ai, "$(P)$(Q):C$(CHAN):EWE")
 {
     field(DTYP, "asynFloat64")
     field(INP, "@asyn($(PORT),$(CHAN),0)CURR_EWE")
@@ -60,7 +60,7 @@ record(ai, "$(P)ECLAB:C$(CHAN):EWE")
 	field(EGU, "V")
 }
 
-record(ai, "$(P)ECLAB:C$(CHAN):ECE")
+record(ai, "$(P)$(Q):C$(CHAN):ECE")
 {
     field(DTYP, "asynFloat64")
     field(INP, "@asyn($(PORT),$(CHAN),0)CURR_ECE")
@@ -69,7 +69,7 @@ record(ai, "$(P)ECLAB:C$(CHAN):ECE")
 	field(EGU, "V")
 }
 
-record(ai, "$(P)ECLAB:C$(CHAN):I")
+record(ai, "$(P)$(Q):C$(CHAN):I")
 {
     field(DTYP, "asynFloat64")
     field(INP, "@asyn($(PORT),$(CHAN),0)CURR_I")
@@ -78,7 +78,7 @@ record(ai, "$(P)ECLAB:C$(CHAN):I")
 	field(EGU, "A")
 }
 
-record(ai, "$(P)ECLAB:C$(CHAN):TIME")
+record(ai, "$(P)$(Q):C$(CHAN):TIME")
 {
     field(DTYP, "asynFloat64")
     field(INP, "@asyn($(PORT),$(CHAN),0)CURR_TIME")
@@ -87,7 +87,7 @@ record(ai, "$(P)ECLAB:C$(CHAN):TIME")
 	field(EGU, "s")
 }
 
-record(ai, "$(P)ECLAB:C$(CHAN):RCOMP")
+record(ai, "$(P)$(Q):C$(CHAN):RCOMP")
 {
     field(DTYP, "asynFloat64")
     field(INP, "@asyn($(PORT),$(CHAN),0)CURR_RCOMP")
@@ -96,7 +96,7 @@ record(ai, "$(P)ECLAB:C$(CHAN):RCOMP")
 	field(EGU, "ohm")
 }
 
-record(ai, "$(P)ECLAB:C$(CHAN):FREQ")
+record(ai, "$(P)$(Q):C$(CHAN):FREQ")
 {
     field(DTYP, "asynFloat64")
     field(INP, "@asyn($(PORT),$(CHAN),0)CURR_FREQ")
@@ -105,7 +105,7 @@ record(ai, "$(P)ECLAB:C$(CHAN):FREQ")
 	field(EGU, "Hz")
 }
 
-record(mbbi, "$(P)ECLAB:C$(CHAN):STATE")
+record(mbbi, "$(P)$(Q):C$(CHAN):STATE")
 {
     field(ZRST, "Stopped")
 	field(ZRVL, 0)
@@ -119,7 +119,7 @@ record(mbbi, "$(P)ECLAB:C$(CHAN):STATE")
 }
 
 # erange
-#record(mbbi, "$(P)ECLAB:C$(CHAN):STATE")
+#record(mbbi, "$(P)$(Q):C$(CHAN):STATE")
 #{
 #    field(ZRST, "2.5 V")
 #	field(ZRVL, 0)
@@ -135,7 +135,7 @@ record(mbbi, "$(P)ECLAB:C$(CHAN):STATE")
 #}
 
 # bandwidth
-#record(mbbi, "$(P)ECLAB:C$(CHAN):STATE")
+#record(mbbi, "$(P)$(Q):C$(CHAN):STATE")
 #{
 #    field(ZRST, "ERROR")
 #	field(ZRVL, 0)
@@ -152,36 +152,54 @@ record(mbbi, "$(P)ECLAB:C$(CHAN):STATE")
 
 # start and stop collection 
 
-record(bo, "$(P)ECLAB:C$(CHAN):START" )
+record(bo, "$(P)$(Q):C$(CHAN):START" )
 {
     field(DTYP, "asynInt32")
     field(OUT, "@asyn($(PORT),$(CHAN),0)STARTCHANNEL")
+	field(ZNAM, "")
+	field(ONAM, "Starting")
+	field(FLNK, "$(P)$(Q):C$(CHAN):_START")
 }
 
-record(bo, "$(P)ECLAB:C$(CHAN):STOP" )
+record(bo, "$(P)$(Q):C$(CHAN):_START")
+{
+    field(VAL, 0)
+    field(OUT, "$(P)$(Q):C$(CHAN):START NPP")
+}
+
+record(bo, "$(P)$(Q):C$(CHAN):STOP" )
 {
     field(DTYP, "asynInt32")
     field(OUT, "@asyn($(PORT),$(CHAN),0)STOPCHANNEL")
+	field(ZNAM, "")
+	field(ONAM, "Stopping")
+	field(FLNK, "$(P)$(Q):C$(CHAN):_STOP")
+}
+
+record(bo, "$(P)$(Q):C$(CHAN):_STOP")
+{
+    field(VAL, 0)
+    field(OUT, "$(P)$(Q):C$(CHAN):STOP NPP")
 }
 
 # this will load the specified list of comma separated techniques
 # onto the channel using parameter value that
-# have been set by previous calls to (P)ECLAB:C(CHAN):T:(TECH):(PARAM)
+# have been set by previous calls to (P)$(Q):C(CHAN):T:(TECH):(PARAM)
 # use the technique filename with out the suffix e.g. OCV
-record(stringout, "$(P)ECLAB:C$(CHAN):LOADTECH:SP")
+record(stringout, "$(P)$(Q):C$(CHAN):LOADTECH:SP")
 {
     field(DTYP, "asynOctetWrite")
     field(OUT, "@asyn($(PORT),$(CHAN),0)LOADTECH")
 }
 
-record(stringin, "$(P)ECLAB:C$(CHAN):LOADTECH")
+record(stringin, "$(P)$(Q):C$(CHAN):LOADTECH")
 {
     field(DTYP, "asynOctetRead")
     field(INP, "@asyn($(PORT),$(CHAN),0)LOADTECH")
 	field(SCAN, "I/O Intr")
 }
 
-record(bo, "$(P)ECLAB:C$(CHAN):UPDATE:SP")
+record(bo, "$(P)$(Q):C$(CHAN):UPDATE:SP")
 {
     field(DTYP, "asynInt32")
     field(OUT, "@asyn($(PORT),$(CHAN),0)UPDATE")

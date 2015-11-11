@@ -10,7 +10,7 @@ include $(TOP)/configure/CONFIG
 
 LIBRARY_IOC += ECLab
 
-ECLABSDK = $(TOP)/Vendor
+ECLABSDK = $(ICPBINARYDIR)/ECLab
 
 USR_CXXFLAGS += -I$(ECLABSDK)/include -DBIOLOGIC_EXPORTS
 
@@ -59,4 +59,8 @@ IntegerArrayParams.cpp : $(TOP)/ECLabApp/Db/ECLabIntegerArrayParams.substitution
 
 SingleArrayParams.cpp : $(TOP)/ECLabApp/Db/ECLabSingleArrayParams.substitutions
 	$(MSI) -o $@ -M "TYPE=SingleArray" -S $< $(TOP)/ECLabApp/src/ArrayParams.cpp
-
+	$(MKDIR) $(TOP)/ecc
+	$(CP) $(ECLABSDK)/*.ecc $(TOP)/ecc
+	$(CP) $(ECLABSDK)/*.bin $(TOP)/ecc
+	$(CP) $(ECLABSDK)/*.xlx $(TOP)/ecc
+	
