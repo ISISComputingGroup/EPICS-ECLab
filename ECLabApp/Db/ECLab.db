@@ -3,35 +3,35 @@
 record(stringin, "$(P)$(Q):VERSION")
 {
     field(DTYP, "asynOctetRead")
-    field(INP, "@asyn($(PORT),$(CHAN),0)VERSION")
+    field(INP, "@asyn($(PORT),0,0)VERSION")
     field(PINI, "YES")
 }
 
 record(stringin, "$(P)$(Q):HOST")
 {
     field(DTYP, "asynOctetRead")
-    field(INP, "@asyn($(PORT),$(CHAN),0)HOST")
+    field(INP, "@asyn($(PORT),0,0)HOST")
     field(PINI, "YES")
 }
 
 record(longin, "$(P)$(Q):DEVCODE")
 {
     field(DTYP, "asynInt32")
-    field(INP, "@asyn($(PORT),$(CHAN),0)DEVCODE")
+    field(INP, "@asyn($(PORT),0,0)DEVCODE")
     field(PINI, "YES")
 }
 
 record(longin, "$(P)$(Q):NUMCHANNELS")
 {
     field(DTYP, "asynInt32")
-    field(INP, "@asyn($(PORT),$(CHAN),0)NUMCHANNELS")
+    field(INP, "@asyn($(PORT),0,0)NUMCHANNELS")
     field(PINI, "YES")
 }
 
 record(longin, "$(P)$(Q):NUMSLOTS")
 {
     field(DTYP, "asynInt32")
-    field(INP, "@asyn($(PORT),$(CHAN),0)NUMSLOTS")
+    field(INP, "@asyn($(PORT),0,0)NUMSLOTS")
     field(PINI, "YES")
 }
 
@@ -48,6 +48,13 @@ record(longin, "$(P)$(Q):C$(CHAN):MEMFILLED" )
 {
     field(DTYP, "asynInt32")
     field(INP, "@asyn($(PORT),$(CHAN),0)MEMFILLED")
+	field(SCAN, "I/O Intr")
+}
+
+record(longin, "$(P)$(Q):C$(CHAN):TB" )
+{
+    field(DTYP, "asynInt32")
+    field(INP, "@asyn($(PORT),$(CHAN),0)CURR_TB")
 	field(SCAN, "I/O Intr")
 }
 
@@ -192,10 +199,27 @@ record(stringout, "$(P)$(Q):C$(CHAN):LOADTECH:SP")
     field(OUT, "@asyn($(PORT),$(CHAN),0)LOADTECH")
 }
 
+# this will specify the list of comma separated techniques
+# on the channel but not load them - it assumes they have been loaded
+# by the potentiostat vendor software
+record(stringout, "$(P)$(Q):C$(CHAN):DEFINETECH:SP")
+{
+    field(DTYP, "asynOctetWrite")
+    field(OUT, "@asyn($(PORT),$(CHAN),0)DEFINETECH")
+}
+
+# techniques currently loaded
 record(stringin, "$(P)$(Q):C$(CHAN):LOADTECH")
 {
     field(DTYP, "asynOctetRead")
     field(INP, "@asyn($(PORT),$(CHAN),0)LOADTECH")
+	field(SCAN, "I/O Intr")
+}
+
+record(stringin, "$(P)$(Q):C$(CHAN):DEFINETECH")
+{
+    field(DTYP, "asynOctetRead")
+    field(INP, "@asyn($(PORT),$(CHAN),0)DEFINETECH")
 	field(SCAN, "I/O Intr")
 }
 

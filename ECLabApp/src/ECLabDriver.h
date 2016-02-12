@@ -46,21 +46,32 @@ private:
     int P_currRCOMP; // float
     int P_currFREQ; // float
     int P_currSTATE; // int
+	int P_currTimeBase; // int
 	int P_loadTech; // string
+	int P_defineTech; // string
 	int P_updateParams; // int
+	int P_dataDone; // int
 	int P_startChannel; // int
 	int P_stopChannel; //int
 	
 	TDeviceInfos_t m_infos;
-	std::vector<std::string> m_techniques;
+	struct techinfo
+	{
+	    std::string name;
+		int index;
+		techinfo(const std::string& name_, int index_) : name(name_), index(index_) { }
+	};
+	std::vector<techinfo> m_techniques;
 
 	int m_ID; // connection ID
 	
 	#define FIRST_ECLAB_PARAM P_version
 	#define LAST_ECLAB_PARAM P_stopChannel
 
-	static void ECLabTaskC(void* arg);
-	void ECLabTask();
+	static void ECLabValuesTaskC(void* arg);
+	void ECLabValuesTask();
+	static void ECLabDataTaskC(void* arg);
+	void ECLabDataTask();
 };
 
 #define NUM_ECLAB_PARAMS    (&LAST_ECLAB_PARAM - &FIRST_ECLAB_PARAM + 1)
@@ -80,8 +91,11 @@ private:
 #define  P_currFREQString    "CURR_FREQ"
 #define  P_currSTATEString    "CURR_STATE"
 #define P_loadTechString "LOADTECH"
+#define P_defineTechString "DEFINETECH"
 #define P_updateParamsString "UPDATE"
+#define P_dataDoneString "DATADONE"
 #define P_startChannelString "STARTCHANNEL"
 #define P_stopChannelString "STOPCHANNEL"
+#define P_currTimeBaseString	"CURR_TB"
 
 #endif /* ECLABDRIVER_H */
