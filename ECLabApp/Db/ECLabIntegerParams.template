@@ -1,16 +1,16 @@
-record(longin, "$(P)$(Q):C$(CHAN):T:$(TECH):$(PARAM)")
+record(longin, "$(P)$(Q):C$(CHAN):T:$(TECH):$(INDEX):$(PARAM)")
 {
     field(DESC, "$(DESC)")
     field(DTYP, "asynInt32")
-    field(INP, "@asyn($(PORT),$(CHAN),0)$(TECH)_$(PARAM)")
+    field(INP, "@asyn($(PORT),$(INDEX),0)$(TECH)_$(PARAM)")
     field(SCAN, "I/O Intr")
 	field(EGU, "$(EGU)")
 }
 
-record(longout, "$(P)$(Q):C$(CHAN):T:$(TECH):$(PARAM):SP")
+record(longout, "$(P)$(Q):C$(CHAN):T:$(TECH):$(INDEX):$(PARAM):SP")
 {
     field(DESC, "$(DESC)")
     field(DTYP, "asynInt32")
-    field(OUT, "@asyn($(PORT),$(CHAN),0)$(TECH)_$(PARAM)")
+    field(OUT, "@asyn($(PORT),$(INDEX),0)$(TECH)_$(PARAM)")
 	field(EGU, "$(EGU)")
 }

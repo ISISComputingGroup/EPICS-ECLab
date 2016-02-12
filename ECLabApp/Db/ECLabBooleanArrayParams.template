@@ -1,18 +1,18 @@
-record(waveform, "$(P)$(Q):C$(CHAN):T:$(TECH):$(PARAM)")
+record(waveform, "$(P)$(Q):C$(CHAN):T:$(TECH):$(INDEX):$(PARAM)")
 {
     field(DESC, "$(DESC)")
     field(DTYP, "asynInt8ArrayIn")
-    field(INP, "@asyn($(PORT),$(CHAN),0)$(TECH)_$(PARAM)")
+    field(INP, "@asyn($(PORT),$(INDEX),0)$(TECH)_$(PARAM)")
 	field(NELM, "$(NELM)")
 	field(FTVL, "UCHAR")
     field(SCAN, "I/O Intr")
 }
 
-record(waveform, "$(P)$(Q):C$(CHAN):T:$(TECH):$(PARAM):SP")
+record(waveform, "$(P)$(Q):C$(CHAN):T:$(TECH):$(INDEX):$(PARAM):SP")
 {
     field(DESC, "$(DESC)")
     field(DTYP, "asynInt8ArrayOut")
-    field(INP, "@asyn($(PORT),$(CHAN),0)$(TECH)_$(PARAM)")
+    field(INP, "@asyn($(PORT),$(INDEX),0)$(TECH)_$(PARAM)")
 	field(NELM, "$(NELM)")
 	field(FTVL, "UCHAR")
 }

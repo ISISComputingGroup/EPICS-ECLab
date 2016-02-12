@@ -1,18 +1,18 @@
-record(ai, "$(P)$(Q):C$(CHAN):T:$(TECH):$(PARAM)")
+record(ai, "$(P)$(Q):C$(CHAN):T:$(TECH):$(INDEX):$(PARAM)")
 {
     field(DESC, "$(DESC)")
     field(DTYP, "asynFloat64")
-    field(INP, "@asyn($(PORT),$(CHAN),0)$(TECH)_$(PARAM)")
+    field(INP, "@asyn($(PORT),$(INDEX),0)$(TECH)_$(PARAM)")
     field(SCAN, "I/O Intr")
 	field(PREC, 3)
 	field(EGU, "$(EGU)")
 }
 
-record(ao, "$(P)$(Q):C$(CHAN):T:$(TECH):$(PARAM):SP")
+record(ao, "$(P)$(Q):C$(CHAN):T:$(TECH):$(INDEX):$(PARAM):SP")
 {
     field(DESC, "$(DESC)")
     field(DTYP, "asynFloat64")
-    field(OUT, "@asyn($(PORT),$(CHAN),0)$(TECH)_$(PARAM)")
+    field(OUT, "@asyn($(PORT),$(INDEX),0)$(TECH)_$(PARAM)")
 	field(PREC, 3)
 	field(EGU, "$(EGU)")
 }

@@ -1,14 +1,14 @@
-record(bi, "$(P)$(Q):C$(CHAN):T:$(TECH):$(PARAM)")
+record(bi, "$(P)$(Q):C$(CHAN):T:$(TECH):$(INDEX):$(PARAM)")
 {
     field(DESC, "$(DESC)")
     field(DTYP, "asynInt32")
-    field(INP, "@asyn($(PORT),$(CHAN),0)$(TECH)_$(PARAM)")
+    field(INP, "@asyn($(PORT),$(INDEX),0)$(TECH)_$(PARAM)")
     field(SCAN, "I/O Intr")
 }
 
-record(bo, "$(P)$(Q):C$(CHAN):T:$(TECH):$(PARAM):SP")
+record(bo, "$(P)$(Q):C$(CHAN):T:$(TECH):$(INDEX):$(PARAM):SP")
 {
     field(DESC, "$(DESC)")
     field(DTYP, "asynInt32")
-    field(OUT, "@asyn($(PORT),$(CHAN),0)$(TECH)_$(PARAM)")
+    field(OUT, "@asyn($(PORT),$(INDEX),0)$(TECH)_$(PARAM)")
 }

@@ -1,0 +1,6 @@
+# LABEL is parameter name in ECLab, PARAM is name withing ASYN/EPICS DB
+# how fata is layed out
+pattern { P, Q, CHAN, PORT, TECH, INDEX, PARAM, LABEL, TYPE }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "OCV", 0, KBIO_TECHID_OCV, 0, "THIGH", "INT"}
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "OCV", 0, KBIO_TECHID_OCV, 1, "TLOW", "INT"}
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "OCV", 0, KBIO_TECHID_OCV, 2, "EWE", "FLOAT"}

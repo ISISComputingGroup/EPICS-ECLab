@@ -92,29 +92,38 @@ asynStatus ECLabDriver::writeOctet(asynUser *pasynUser, const char *value, size_
 	getParamName(function, &paramName);
 	const char* functionName = "writeOctet";
 	std::string value_s(value, maxChars);
-	int addr = 0; // channel number
+	int addr = 0;
 	getAddress(pasynUser, &addr);
 	try
 	{
-		if (function == P_loadTech)
+		if (function == P_loadTech || function == P_defineTech) // addr is channel number
 		{
 			char* valueCopy = strdup(value_s.c_str()); // as strtok modfies the string
 			char *tok_save = NULL;
 			char * tech = epicsStrtok_r(valueCopy, " ,;", &tok_save); //epics vers of strtok
 			m_techniques.clear();
+			std::map<std::string,int> tech_count;
 			while (tech != NULL)
 			{
-			    m_techniques.push_back(tech);
+			    if (tech_count.find(tech) == tech_count.end())
+				{
+				    tech_count[tech] = 0;
+				}
+			    m_techniques.push_back(techinfo(tech, tech_count[tech]));
+				++tech_count[tech];
 				tech = epicsStrtok_r(NULL, " ,;", &tok_save); 				
 			}
 			free(valueCopy);	
+		}
+		if (function == P_loadTech)
+		{
 			TEccParams_t params; 
 			for (int i = 0; i < m_techniques.size(); ++i)
 			{
 			    bool first = ( i == 0 );
 				bool last = ( i == (m_techniques.size() - 1) );
 				std::vector<TEccParam_t> values;
-				getTechniqueParams(m_techniques[i], addr, values, false);
+				getTechniqueParams(m_techniques[i].name, m_techniques[i].index, values, false);
 				if (values.size() > 0)
 				{
 				    params.pParams = &(values[0]);
@@ -124,11 +133,11 @@ asynStatus ECLabDriver::writeOctet(asynUser *pasynUser, const char *value, size_
 					params.pParams = NULL;
 				}
 				params.len = values.size();
-				std::string ecc_file = ecc_dir + m_techniques[i] + "4.ecc";
+				std::string ecc_file = ecc_dir + m_techniques[i].name + "4.ecc";
 				std::replace(ecc_file.begin(), ecc_file.end(), '/', '\\');
 				ECLabInterface::LoadTechnique(m_ID, addr, const_cast<char*>(ecc_file.c_str()), params, first, last, false);
 			}
-		}	
+		}
 		asynPortDriver::writeOctet(pasynUser, value, maxChars, nActual);
 		asynPrint(pasynUser, ASYN_TRACEIO_DRIVER, 
 			"%s:%s: function=%d, name=%s, value=%s\n", 
@@ -203,14 +212,14 @@ asynStatus ECLabDriver::writeInt32(asynUser *pasynUser, epicsInt32 value)
 			for (int i = 0; i < m_techniques.size(); ++i)
 			{
 				std::vector<TEccParam_t> values;
-				getTechniqueParams(m_techniques[i], addr, values, true);
+				getTechniqueParams(m_techniques[i].name, m_techniques[i].index, values, true);
 				int maxupdate = 10; // can only update a maximum of 10 parameters at a time with ECLabInterface::UpdateParameters
 				for(int j=0; j<values.size(); j += maxupdate)
 				{
 					params.pParams = &(values[j]);
 					int n = values.size() - j;
 					params.len = (n > maxupdate ? maxupdate : n);
-					std::string ecc_file = ecc_dir + m_techniques[i] + "4.ecc";
+					std::string ecc_file = ecc_dir + m_techniques[i].name + "4.ecc";
 					std::replace(ecc_file.begin(), ecc_file.end(), '/', '\\');
 				    ECLabInterface::UpdateParameters(m_ID, addr, i, params, const_cast<char*>(ecc_file.c_str()));
 				}
@@ -279,10 +288,13 @@ ECLabDriver::ECLabDriver(const char *portName, const char *ip)
 	createParam(P_currRCOMPString, asynParamFloat64, &P_currRCOMP);
 	createParam(P_currFREQString, asynParamFloat64, &P_currFREQ);
 	createParam(P_currSTATEString, asynParamInt32, &P_currSTATE);
+	createParam(P_currTimeBaseString, asynParamInt32, &P_currTimeBase);
 	createParam(P_loadTechString, asynParamOctet, &P_loadTech);
+	createParam(P_defineTechString, asynParamOctet, &P_defineTech);
 	createParam(P_updateParamsString, asynParamInt32, &P_updateParams);
 	createParam(P_startChannelString, asynParamInt32, &P_startChannel);
 	createParam(P_stopChannelString, asynParamInt32, &P_stopChannel);
+	createParam(P_dataDoneString, asynParamInt32, &P_dataDone);
 	
     setStringParam(P_version, "unknown");
     setStringParam(P_host, "unknown");
@@ -318,27 +330,46 @@ ECLabDriver::ECLabDriver(const char *portName, const char *ip)
 	setIntegerParam(P_numChannels, m_infos.NumberOfChannels);
 	setIntegerParam(P_numSlots, m_infos.NumberOfSlots);
 	// Create the thread for background tasks (not used at present, could be used for I/O intr scanning) 
-	if (epicsThreadCreate("ECLabDriverTask",
+	if (epicsThreadCreate("ECLabValuesTask",
 		epicsThreadPriorityMedium,
 		epicsThreadGetStackSize(epicsThreadStackMedium),
-		(EPICSTHREADFUNC)ECLabTaskC, this) == 0)
+		(EPICSTHREADFUNC)ECLabValuesTaskC, this) == 0)
 	{
 		printf("%s:%s: epicsThreadCreate failure\n", driverName, functionName);
 		return;
 	}
+#if 0
+	if (epicsThreadCreate("ECLabDataTask",
+		epicsThreadPriorityMedium,
+		epicsThreadGetStackSize(epicsThreadStackMedium),
+		(EPICSTHREADFUNC)ECLabDataTaskC, this) == 0)
+	{
+		printf("%s:%s: epicsThreadCreate failure\n", driverName, functionName);
+		return;
+	}
+#endif
 }
 
 /// @todo Might use this for background polling if implementing I/O Intr scanning
-void ECLabDriver::ECLabTaskC(void* arg) 
+void ECLabDriver::ECLabValuesTaskC(void* arg) 
 { 
 	ECLabDriver* driver = reinterpret_cast<ECLabDriver*>(arg);
     if (NULL != driver)
     {
-        driver->ECLabTask();
+        driver->ECLabValuesTask();
     }
 }
 
-void ECLabDriver::ECLabTask() 
+void ECLabDriver::ECLabDataTaskC(void* arg) 
+{ 
+	ECLabDriver* driver = reinterpret_cast<ECLabDriver*>(arg);
+    if (NULL != driver)
+    {
+        driver->ECLabDataTask();
+    }
+}
+
+void ECLabDriver::ECLabValuesTask() 
 {
     TCurrentValues_t cvals;
 	TChannelInfos_t cinfo;
@@ -372,6 +403,7 @@ void ECLabDriver::ECLabTask()
 				setDoubleParam(i, P_currFREQ, cvals.Freq);
 				setIntegerParam(i, P_currSTATE, cvals.State);
 				setIntegerParam(i, P_numTech, cinfo.NbOfTechniques);
+				setIntegerParam(i, P_currTimeBase, cvals.TimeBase);
 //				if (len_buffer > 0)
 //				{
 //				    std::cerr << buffer << std::endl;
@@ -382,6 +414,50 @@ void ECLabDriver::ECLabTask()
 		}
         epicsThreadSleep(1.0);        
     }
+}
+
+void ECLabDriver::ECLabDataTask() 
+{
+    TCurrentValues_t cvals;
+	TDataInfos_t dinfo;
+	TDataBuffer_t dbuffer;
+	int ndata;
+	while(true)
+	{
+	    ndata = 0;
+	    for(int i=0; i<m_infos.NumberOfChannels; ++i)
+		{
+		    if (ECLabInterface::IsChannelPlugged(m_ID, i))
+			{
+				try
+				{
+					ECLabInterface::GetData(m_ID, i, &dbuffer, &dinfo, &cvals);
+				}
+				catch(const std::exception& ex)
+				{
+					errlogSevPrintf(errlogInfo, "%s", ex.what());
+				}
+				std::cerr << "npoints " << dinfo.NbRows << " npars " << dinfo.NbCols << " tidx " << dinfo.TechniqueIndex << " tid " << dinfo.TechniqueID << " " << dinfo.ProcessIndex << " " << dinfo.loop << std::endl; 
+//				t = dinfo.StartTime + cvals.TimeBase * ( th << 32 + tl)
+				lock();
+				if (cvals.State == KBIO_STATE_STOP && cvals.MemFilled == 0)
+				{
+					setIntegerParam(i, P_dataDone, 1);
+				}
+				else
+				{
+				    ++ndata;
+					setIntegerParam(i, P_dataDone, 0);
+				}
+                callParamCallbacks();
+				unlock();
+			}
+		}
+		if (ndata == 0)
+		{
+            epicsThreadSleep(3.0);        
+		}
+	}
 }
 
 extern "C" {

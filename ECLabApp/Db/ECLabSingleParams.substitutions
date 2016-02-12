@@ -1,7 +1,12 @@
 # LABEL is parameter name in ECLab, PARAM is name withing ASYN/EPICS DB
-pattern { P, Q, CHAN, PORT, TECH, PARAM, LABEL, DESC, EGU }
-{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "OCV", "RTT", "Rest_time_T", "Rest duration", "s"}
-{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "OCV", "REDE", "Record_every_dE", "Record every dE", "V"}
-{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "OCV", "REDT", "Record_every_dT", "Record every dT", "s"}
-{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CA", "REDT", "Record_every_dT", "Record every dT", "s"}
-{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CA", "REDI", "Record_every_dI", "Record every dI", "A"}
+pattern { P, Q, CHAN, PORT, TECH, INDEX, PARAM, LABEL, DESC, EGU }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "OCV", 0, "RTT", "Rest_time_T", "Rest duration", "s"}
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "OCV", 0, "REDE", "Record_every_dE", "Record every dE", "V"}
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "OCV", 0, "REDT", "Record_every_dT", "Record every dT", "s"}
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CA", 0, "REDT", "Record_every_dT", "Record every dT", "s"}
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CA", 0, "REDI", "Record_every_dI", "Record every dI", "A"}
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "OCV", 1, "RTT", "Rest_time_T", "Rest duration", "s"}
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "OCV", 1, "REDE", "Record_every_dE", "Record every dE", "V"}
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "OCV", 1, "REDT", "Record_every_dT", "Record every dT", "s"}
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CA", 1, "REDT", "Record_every_dT", "Record every dT", "s"}
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CA", 1, "REDI", "Record_every_dI", "Record every dI", "A"}
