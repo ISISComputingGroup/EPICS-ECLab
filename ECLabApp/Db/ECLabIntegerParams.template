@@ -1,3 +1,12 @@
+## @file
+## EPICS db file.
+## Write to the :SP fields to set new values, and then use $(P)$(Q):C$(CHAN):UPDATE:SP to send them
+
+# % macro, P, device prefix
+# % macro, Q, device sub-prefix
+# % macro, CHAN, channel number
+
+## Read "$(DESC)" for technique $(TECH)
 record(longin, "$(P)$(Q):C$(CHAN):T:$(TECH):$(INDEX):$(PARAM)")
 {
     field(DESC, "$(DESC)")
@@ -7,6 +16,7 @@ record(longin, "$(P)$(Q):C$(CHAN):T:$(TECH):$(INDEX):$(PARAM)")
 	field(EGU, "$(EGU)")
 }
 
+## Set "$(DESC)" for technique $(TECH)
 record(longout, "$(P)$(Q):C$(CHAN):T:$(TECH):$(INDEX):$(PARAM):SP")
 {
     field(DESC, "$(DESC)")

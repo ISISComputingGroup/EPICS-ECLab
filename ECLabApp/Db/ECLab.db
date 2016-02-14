@@ -1,4 +1,9 @@
-# device specific
+## @file
+## EPICS db file
+
+# % macro, P, device prefix
+# % macro, Q, device sub-prefix
+# % macro, CHAN, channel number
 
 record(stringin, "$(P)$(Q):VERSION")
 {
@@ -58,6 +63,7 @@ record(longin, "$(P)$(Q):C$(CHAN):TB" )
 	field(SCAN, "I/O Intr")
 }
 
+## Current EWE Value
 record(ai, "$(P)$(Q):C$(CHAN):EWE")
 {
     field(DTYP, "asynFloat64")
@@ -67,6 +73,7 @@ record(ai, "$(P)$(Q):C$(CHAN):EWE")
 	field(EGU, "V")
 }
 
+## Current ECE Value
 record(ai, "$(P)$(Q):C$(CHAN):ECE")
 {
     field(DTYP, "asynFloat64")
@@ -159,6 +166,7 @@ record(mbbi, "$(P)$(Q):C$(CHAN):STATE")
 
 # start and stop collection 
 
+## start collecting
 record(bo, "$(P)$(Q):C$(CHAN):START" )
 {
     field(DTYP, "asynInt32")
@@ -174,6 +182,7 @@ record(bo, "$(P)$(Q):C$(CHAN):_START")
     field(OUT, "$(P)$(Q):C$(CHAN):START NPP")
 }
 
+## stop collecting
 record(bo, "$(P)$(Q):C$(CHAN):STOP" )
 {
     field(DTYP, "asynInt32")
@@ -189,19 +198,19 @@ record(bo, "$(P)$(Q):C$(CHAN):_STOP")
     field(OUT, "$(P)$(Q):C$(CHAN):STOP NPP")
 }
 
-# this will load the specified list of comma separated techniques
-# onto the channel using parameter value that
-# have been set by previous calls to (P)$(Q):C(CHAN):T:(TECH):(PARAM)
-# use the technique filename with out the suffix e.g. OCV
+## this will load the specified list of comma separated techniques
+## onto the channel using parameter value that
+## have been set by previous calls to (P)$(Q):C(CHAN):T:(TECH):(PARAM)
+## use the technique filename with out the suffix e.g. OCV
 record(stringout, "$(P)$(Q):C$(CHAN):LOADTECH:SP")
 {
     field(DTYP, "asynOctetWrite")
     field(OUT, "@asyn($(PORT),$(CHAN),0)LOADTECH")
 }
 
-# this will specify the list of comma separated techniques
-# on the channel but not load them - it assumes they have been loaded
-# by the potentiostat vendor software
+## this will specify the list of comma separated techniques
+## on the channel but not load them - it assumes they have been loaded
+## by the potentiostat vendor software
 record(stringout, "$(P)$(Q):C$(CHAN):DEFINETECH:SP")
 {
     field(DTYP, "asynOctetWrite")
@@ -223,6 +232,7 @@ record(stringin, "$(P)$(Q):C$(CHAN):DEFINETECH")
 	field(SCAN, "I/O Intr")
 }
 
+## send changed parameter values to running technique
 record(bo, "$(P)$(Q):C$(CHAN):UPDATE:SP")
 {
     field(DTYP, "asynInt32")

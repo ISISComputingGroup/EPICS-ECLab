@@ -6,6 +6,8 @@ O.*/
 /lib
 /templates
 /ecc
+/doc
+*.tags
 envPaths
 cdCommands
 dllPath.bat

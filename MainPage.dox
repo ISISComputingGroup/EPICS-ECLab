@@ -1,0 +1,51 @@
+<HTML>
+/** @mainpage ECLab (ECLab EPICS Support Module)
+
+Various process variables as in @ref ECLab.db will be created. $(P) will be substituted
+by the machine prefix (e.g. IN:LARMOR: ) and $(Q) will be the IOC name (e.g. ECLAB_01)
+and $(CHAN) the channel number (usually 0)
+
+First set techniqure params such as e.g. RTT (Rest Duration, Rest Time T) for the OCV technique as descibed in @ref ECLabSingleParams.db use
+<PRE>
+caput IN:LARMOR:ECLAB_01:C0:T:OCV:0:RTT:SP 30
+</PRE>
+here C0 means channel 0, OCV:0: means the first OCV technique in the list of linked techniques.
+To set for the second occurrence of OCV technique on channel 0 you would use 
+<PRE>
+caput IN:LARMOR:ECLAB_01:C0:T:OCV:1:RTT:SP 30
+</PRE>
+
+Then define the list of techniques used and their order via e.g.
+<PRE>
+caput IN:LARMOR:ECLAB_01:C0:DEFINETECH:SP "OCV,CA,OCV"
+</PRE>
+ 
+then to stop and start use
+<PRE>
+caput IN:LARMOR:ECLAB_01:C0:START 1
+caput IN:LARMOR:ECLAB_01:C0:STOP 1
+</PRE>
+ 
+The status is in
+
+<PRE>
+caget IN:LARMOR:ECLAB_01:C0:STATE
+</PRE>
+ 
+other current values are in 
+<PRE>
+caget IN:LARMOR:ECLAB_01:C0:EWE
+caget IN:LARMOR:ECLAB_01:C0:ECE
+caget IN:LARMOR:ECLAB_01:C0:I
+caget IN:LARMOR:ECLAB_01:C0:TIME
+</PRE>
+ 
+<H2>Notes:</H2>
+
+ECLabConfigure() in @link st.cmd IOC startup file. @endlink 
+
+To configure and run see the @ref README.txt file in the run directory.
+
+
+*/
+</HTML>
