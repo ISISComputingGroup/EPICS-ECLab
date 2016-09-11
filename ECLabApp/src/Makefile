@@ -10,6 +10,7 @@ include $(TOP)/configure/CONFIG
 
 LIBRARY_IOC += ECLab
 
+# location of ECLab OEM development kit
 ECLABSDK = $(ICPBINARYDIR)/ECLab
 
 USR_CXXFLAGS += -I$(ECLABSDK)/include -DBIOLOGIC_EXPORTS
