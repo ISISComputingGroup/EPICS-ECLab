@@ -26,6 +26,7 @@ $(APPNAME)_DBD += base.dbd
 #$(APPNAME)_DBD += caPutLog.dbd
 #$(APPNAME)_DBD += utilities.dbd
 ## add other dbd here ##
+$(APPNAME)_DBD += asyn.dbd
 $(APPNAME)_DBD += ECLab.dbd
 
 # Add all the support libraries needed by this IOC
