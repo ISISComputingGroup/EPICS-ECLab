@@ -22,18 +22,18 @@ ECLab_SRCS += ECLabParams.cpp ECLabDriver.cpp dummyFunctions.cpp
 ECLab_LIBS += asyn
 
 ifneq ($(findstring windows,$(EPICS_HOST_ARCH)),) 
-ECLab_LIBS += eclib64
+ECLab_LIBS += EClib64
 BIN_INSTALLS_WIN32 += $(wildcard $(ECLABSDK)/dll/win64/*.dll)
 LIB_INSTALLS_WIN32 += $(wildcard $(ECLABSDK)/lib/win64/*.lib)
 endif
 ifneq ($(findstring win32,$(EPICS_HOST_ARCH)),) 
-ECLab_LIBS += eclib
+ECLab_LIBS += EClib
 BIN_INSTALLS_WIN32 += $(wildcard $(ECLABSDK)/dll/win32/*.dll)
 LIB_INSTALLS_WIN32 += $(wildcard $(ECLABSDK)/lib/win32/*.lib)
 endif
 
-eclib64_DIR = $(ECLABSDK)/lib/win64
-eclib_DIR = $(ECLABSDK)/lib/win32
+EClib64_DIR = $(ECLABSDK)/lib/win64
+EClib_DIR = $(ECLABSDK)/lib/win32
 
 ECLab_LIBS += $(EPICS_BASE_IOC_LIBS)
 
