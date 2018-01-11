@@ -12,6 +12,8 @@ $(foreach dir, $(filter-out configure,$(DIRS)),$(eval $(call DIR_template,$(dir)
 
 iocBoot_DEPEND_DIRS += $(filter %App,$(DIRS))
 
+ECLabTestApp_DEPEND_DIRS += ECLabApp
+
 include $(TOP)/configure/RULES_TOP
 
 
