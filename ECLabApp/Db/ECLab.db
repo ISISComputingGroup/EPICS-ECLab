@@ -25,6 +25,15 @@ record(bi, "$(P)$(Q):SAVEDATA")
     field(SCAN, "I/O Intr")
 }
 
+record(bi, "$(P)$(Q):DATADONE")
+{
+    field(DTYP, "asynInt32")
+    field(INP, "@asyn($(PORT),0,0)DATADONE")
+	field(ZNAM, "No")
+	field(ONAM, "Yes")
+    field(SCAN, "I/O Intr")
+}
+
 record(waveform, "$(P)$(Q):FILEPREFIX:SP")
 {
     field(DTYP, "asynOctetWrite")
