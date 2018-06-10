@@ -15,6 +15,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <time.h>
 
 #include <epicsStdio.h>
 
@@ -56,6 +57,7 @@ struct MyTechnique
 struct MyChannel
 {
     TChannelInfos_t info;
+	time_t start;
 	std::vector<MyTechnique> techniques;
 	void print(std::ostream& os)
 	{
@@ -239,6 +241,7 @@ BIOLOGIC_API(int) BL_StartChannelStub (int ID, uint8 channel)
 	CHECK_CHANNEL(channel);
 	my_channels[channel].info.State = KBIO_STATE_RUN;
 	my_channels[channel].print(std::cout);
+	time(&(my_channels[channel].start));
     return 0; 
 }
 
@@ -259,15 +262,75 @@ BIOLOGIC_API(int) BL_GetCurrentValuesStub (int ID, uint8 channel, TCurrentValues
 	pValues->State = my_channels[channel].info.State;
 	pValues->Ece = 2;
 	pValues->Eoverflow = 3;
+	pValues->TimeBase = 1e-6;
+	pValues->MemFilled = 0;
+	pValues->ElapsedTime = time(NULL) - my_channels[channel].start;
 	return 0;
 }
 
+static unsigned castFloatToInt(float f)
+{
+	union
+	{
+		float f;
+		unsigned u;
+	} cf;
+	cf.f = f;
+	return cf.u;
+}
 
 BIOLOGIC_API(int) BL_GetDataStub( int ID, uint8 channel, TDataBuffer_t* pBuf, TDataInfos_t* pInfos, TCurrentValues_t* pValues ) 
 { 
     DEBUG_PRINT("BL_GetData");
 	CHECK_CONNECTION_ID(ID);
 	CHECK_CHANNEL(channel);
+	BL_GetCurrentValuesStub(ID, channel, pValues);
+	pInfos->NbRows = 0;
+	pInfos->NbCols = 0;
+	for(int i=0; i<my_channels[channel].techniques.size(); ++i)
+	{
+		size_t pos = my_channels[channel].techniques[i].name.find_last_of("\\/");
+		if (pos == std::string::npos)
+		{
+			pos = 0;
+		}
+		if (my_channels[channel].techniques[i].name.substr(pos+1) == "ocv4.ecc")
+		{
+			pInfos->NbRows = 1;
+			pInfos->NbCols = 3;
+			pInfos->TechniqueID = KBIO_TECHID_OCV;
+			pInfos->ProcessIndex = 0;
+			pInfos->StartTime = my_channels[channel].start;
+			uint64_t t;
+			t = (time(NULL) - pInfos->StartTime) / pValues->TimeBase;
+			pBuf->data[0] = (t >> 32);	// thigh
+			pBuf->data[1] = (t & 0xffffffff);	// tlow
+			pBuf->data[2] = castFloatToInt(5);	// ewe	
+		}
+		if (my_channels[channel].techniques[i].name.substr(pos+1) == "peis4.ecc")
+		{
+			pInfos->TechniqueID = KBIO_TECHID_PEIS;
+			pInfos->NbRows = 1;
+			pInfos->StartTime = my_channels[channel].start;
+			if (time(NULL) % 2 == 0)
+			{
+			    pInfos->ProcessIndex = 0;
+			    pInfos->NbCols = 4;
+			    uint64_t t;
+			    t = (time(NULL) - pInfos->StartTime) / pValues->TimeBase;
+			    pBuf->data[0] = (t >> 32);	// thigh
+			    pBuf->data[1] = (t & 0xffffffff);	// tlow
+			    pBuf->data[2] = castFloatToInt(5);	// ewe	
+			    pBuf->data[3] = castFloatToInt(5);	// I	
+			}
+			else
+			{
+			    pInfos->ProcessIndex = 1;
+			    pInfos->NbCols = 14;
+			    pBuf->data[13] = castFloatToInt(10);	// time					
+			}
+		}
+	}
     return 0; 
 }
 

@@ -5,6 +5,43 @@
 # % macro, Q, device sub-prefix
 # % macro, CHAN, channel number
 
+
+record(bo, "$(P)$(Q):SAVEDATA:SP")
+{
+    field(DTYP, "asynInt32")
+    field(OUT, "@asyn($(PORT),0,0)SAVEDATA")
+	field(ZNAM, "No")
+	field(ONAM, "Yes")
+	field(VAL, 1)
+	field(PINI, "YES")
+}
+
+record(bi, "$(P)$(Q):SAVEDATA")
+{
+    field(DTYP, "asynInt32")
+    field(INP, "@asyn($(PORT),0,0)SAVEDATA")
+	field(ZNAM, "No")
+	field(ONAM, "Yes")
+    field(SCAN, "I/O Intr")
+}
+
+record(waveform, "$(P)$(Q):FILEPREFIX:SP")
+{
+    field(DTYP, "asynOctetWrite")
+    field(INP, "@asyn($(PORT),0,0)FILEPREFIX")
+	field(NELM, "256")
+	field(FTVL, "CHAR")
+}
+
+record(waveform, "$(P)$(Q):FILEPREFIX")
+{
+    field(DTYP, "asynOctetRead")
+    field(INP, "@asyn($(PORT),0,0)FILEPREFIX")
+	field(NELM, "256")
+	field(FTVL, "CHAR")
+    field(SCAN, "I/O Intr")
+}
+
 record(stringin, "$(P)$(Q):VERSION")
 {
     field(DTYP, "asynOctetRead")
@@ -42,6 +79,7 @@ record(longin, "$(P)$(Q):NUMSLOTS")
 
 # channel specific current information
 
+## number of techniques loaded on channel
 record(longin, "$(P)$(Q):C$(CHAN):NUMTECH" )
 {
     field(DTYP, "asynInt32")
@@ -56,7 +94,7 @@ record(longin, "$(P)$(Q):C$(CHAN):MEMFILLED" )
 	field(SCAN, "I/O Intr")
 }
 
-record(longin, "$(P)$(Q):C$(CHAN):TB" )
+record(ai, "$(P)$(Q):C$(CHAN):TB" )
 {
     field(DTYP, "asynInt32")
     field(INP, "@asyn($(PORT),$(CHAN),0)CURR_TB")
@@ -201,7 +239,7 @@ record(bo, "$(P)$(Q):C$(CHAN):_STOP")
 ## this will load the specified list of comma separated techniques
 ## onto the channel using parameter value that
 ## have been set by previous calls to (P)$(Q):C(CHAN):T:(TECH):(PARAM)
-## use the technique filename with out the suffix e.g. OCV
+## use the technique filename with out the suffix e.g. ocv
 record(stringout, "$(P)$(Q):C$(CHAN):LOADTECH:SP")
 {
     field(DTYP, "asynOctetWrite")

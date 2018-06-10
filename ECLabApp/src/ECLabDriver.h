@@ -30,7 +30,13 @@ public:
 //	virtual asynStatus readInt32Array(asynUser *pasynUser, epicsInt32 *value, size_t nElements, size_t *nIn);
 	virtual void report(FILE* fp, int details);
 //	void testPrintMap(techniqueMap_t);
-
+    double getTime(unsigned thigh, unsigned tlow, double start_time, double time_base);
+    void processOCVData(std::fstream& fs, int nrows, int ncols, int technique_index, int process_index, 
+                     int loop, double start_time, double time_base, TDataBuffer_t* dbuffer);
+    void processPEISData(std::fstream& fs0, std::fstream& fs1, int nrows, int ncols, int technique_index, int process_index, 
+                     int loop, double start_time, double time_base, TDataBuffer_t* dbuffer);
+	void updateCvals(int chan, TCurrentValues_t& cvals);
+	
 private:
 	int P_version; // string
     int P_host; // string
@@ -46,11 +52,13 @@ private:
     int P_currRCOMP; // float
     int P_currFREQ; // float
     int P_currSTATE; // int
-	int P_currTimeBase; // int
+	int P_currTimeBase; // float
 	int P_loadTech; // string
 	int P_defineTech; // string
 	int P_updateParams; // int
 	int P_dataDone; // int
+	int P_filePrefix; // string
+	int P_saveData; //int
 	int P_startChannel; // int
 	int P_stopChannel; //int
 	
@@ -83,13 +91,13 @@ private:
 #define P_numSlotsString "NUMSLOTS"
 #define P_numTechString "NUMTECH"
 #define P_memFilledString "MEMFILLED"
-#define  P_currEWEString "CURR_EWE"
-#define  P_currECEString "CURR_ECE"
-#define  P_currIString   "CURR_I"
-#define  P_currTIMEString  "CURR_TIME"
-#define  P_currRCOMPString   "CURR_RCOMP"
-#define  P_currFREQString    "CURR_FREQ"
-#define  P_currSTATEString    "CURR_STATE"
+#define P_currEWEString "CURR_EWE"
+#define P_currECEString "CURR_ECE"
+#define P_currIString   "CURR_I"
+#define P_currTIMEString  "CURR_TIME"
+#define P_currRCOMPString   "CURR_RCOMP"
+#define P_currFREQString    "CURR_FREQ"
+#define P_currSTATEString    "CURR_STATE"
 #define P_loadTechString "LOADTECH"
 #define P_defineTechString "DEFINETECH"
 #define P_updateParamsString "UPDATE"
@@ -97,5 +105,7 @@ private:
 #define P_startChannelString "STARTCHANNEL"
 #define P_stopChannelString "STOPCHANNEL"
 #define P_currTimeBaseString	"CURR_TB"
+#define P_filePrefixString	"FILEPREFIX"
+#define P_saveDataString	"SAVEDATA"
 
 #endif /* ECLABDRIVER_H */

@@ -1,8 +1,13 @@
 ASYN=$(SUPPORT)/asyn/master
 ONCRPC=$(SUPPORT)/oncrpc/master
 
+## path to top of our build area, we copy ecc files
+## to $(ECLAB)/ecc and $(ECLAB) is used within the program 
+ECLAB=$(SUPPORT)/ECLab/master
+
 # optional extra local definitions here
 -include $(TOP)/configure/RELEASE.private
 
+## ISIS specific configuration
 include $(TOP)/../../../ISIS_CONFIG
 -include $(TOP)/../../../ISIS_CONFIG.$(EPICS_HOST_ARCH)

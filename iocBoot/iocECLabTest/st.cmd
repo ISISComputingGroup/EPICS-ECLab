@@ -14,17 +14,10 @@ cd ${TOP}
 dbLoadDatabase "dbd/ECLabTest.dbd"
 ECLabTest_registerRecordDeviceDriver pdbbase
 
-##ISIS## Run IOC initialisation 
-< $(IOCSTARTUP)/init.cmd
 
 #ECLabConfigure("chan0", 130.246.36.213)
 # pass "SIM" as ip address for simulation mode
 ECLabConfigure("chan0", "SIM")
-
-## Load record instances
-
-##ISIS## Load common DB records 
-< $(IOCSTARTUP)/dbload.cmd
 
 ## Load our record instances
 dbLoadRecords("db/ECLab.db","P=$(MYPVPREFIX),Q=ECLAB,PORT=chan0,CHAN=0")
@@ -35,14 +28,6 @@ dbLoadRecords("db/ECLabIntegerArrayParams.db","P=$(MYPVPREFIX),Q=ECLAB,PORT=chan
 dbLoadRecords("db/ECLabBooleanArrayParams.db","P=$(MYPVPREFIX),Q=ECLAB,PORT=chan0,CHAN=0")
 dbLoadRecords("db/ECLabSingleArrayParams.db","P=$(MYPVPREFIX),Q=ECLAB,PORT=chan0,CHAN=0")
 
-##ISIS## Stuff that needs to be done after all records are loaded but before iocInit is called 
-< $(IOCSTARTUP)/preiocinit.cmd
-
 cd ${TOP}/iocBoot/${IOC}
 iocInit
 
-## Start any sequence programs
-#seq sncxxx,"user=faa59Host"
-
-##ISIS## Stuff that needs to be done after iocInit is called e.g. sequence programs 
-< $(IOCSTARTUP)/postiocinit.cmd
