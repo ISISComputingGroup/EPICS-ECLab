@@ -301,7 +301,7 @@ BIOLOGIC_API(int) BL_GetDataStub( int ID, uint8 channel, TDataBuffer_t* pBuf, TD
 			pInfos->TechniqueID = KBIO_TECHID_OCV;
 			pInfos->ProcessIndex = 0;
 			pInfos->StartTime = my_channels[channel].start;
-			uint64_t t;
+			__int64 t;
 			t = (time(NULL) - pInfos->StartTime) / pValues->TimeBase;
 			pBuf->data[0] = (t >> 32);	// thigh
 			pBuf->data[1] = (t & 0xffffffff);	// tlow
@@ -316,7 +316,7 @@ BIOLOGIC_API(int) BL_GetDataStub( int ID, uint8 channel, TDataBuffer_t* pBuf, TD
 			{
 			    pInfos->ProcessIndex = 0;
 			    pInfos->NbCols = 4;
-			    uint64_t t;
+			    __int64 t;
 			    t = (time(NULL) - pInfos->StartTime) / pValues->TimeBase;
 			    pBuf->data[0] = (t >> 32);	// thigh
 			    pBuf->data[1] = (t & 0xffffffff);	// tlow

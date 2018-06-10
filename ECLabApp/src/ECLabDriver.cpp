@@ -431,7 +431,7 @@ void ECLabDriver::ECLabValuesTask()
 
 double ECLabDriver::getTime(unsigned thigh, unsigned tlow, double start_time, double time_base)
 {
-    return (((uint64_t)thigh << 32) + tlow) * time_base + start_time;
+    return (((__int64)thigh << 32) + tlow) * time_base + start_time;
 }
 
 void ECLabDriver::processPEISData(std::fstream& fs0, std::fstream& fs1, int nrows, int ncols, int technique_index, int process_index, 
