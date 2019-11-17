@@ -6,51 +6,6 @@
 # % macro, CHAN, channel number
 
 
-record(bo, "$(P)$(Q):SAVEDATA:SP")
-{
-    field(DTYP, "asynInt32")
-    field(OUT, "@asyn($(PORT),0,0)SAVEDATA")
-	field(ZNAM, "No")
-	field(ONAM, "Yes")
-	field(VAL, 1)
-	field(PINI, "YES")
-}
-
-record(bi, "$(P)$(Q):SAVEDATA")
-{
-    field(DTYP, "asynInt32")
-    field(INP, "@asyn($(PORT),0,0)SAVEDATA")
-	field(ZNAM, "No")
-	field(ONAM, "Yes")
-    field(SCAN, "I/O Intr")
-}
-
-record(bi, "$(P)$(Q):DATADONE")
-{
-    field(DTYP, "asynInt32")
-    field(INP, "@asyn($(PORT),0,0)DATADONE")
-	field(ZNAM, "No")
-	field(ONAM, "Yes")
-    field(SCAN, "I/O Intr")
-}
-
-record(waveform, "$(P)$(Q):FILEPREFIX:SP")
-{
-    field(DTYP, "asynOctetWrite")
-    field(INP, "@asyn($(PORT),0,0)FILEPREFIX")
-	field(NELM, "256")
-	field(FTVL, "CHAR")
-}
-
-record(waveform, "$(P)$(Q):FILEPREFIX")
-{
-    field(DTYP, "asynOctetRead")
-    field(INP, "@asyn($(PORT),0,0)FILEPREFIX")
-	field(NELM, "256")
-	field(FTVL, "CHAR")
-    field(SCAN, "I/O Intr")
-}
-
 record(stringin, "$(P)$(Q):VERSION")
 {
     field(DTYP, "asynOctetRead")
@@ -87,6 +42,51 @@ record(longin, "$(P)$(Q):NUMSLOTS")
 }
 
 # channel specific current information
+
+record(bo, "$(P)$(Q):C$(CHAN):SAVEDATA:SP")
+{
+    field(DTYP, "asynInt32")
+    field(OUT, "@asyn($(PORT),$(CHAN),0)SAVEDATA")
+	field(ZNAM, "No")
+	field(ONAM, "Yes")
+	field(VAL, 1)
+	field(PINI, "YES")
+}
+
+record(bi, "$(P)$(Q):C$(CHAN):SAVEDATA")
+{
+    field(DTYP, "asynInt32")
+    field(INP, "@asyn($(PORT),$(CHAN),0)SAVEDATA")
+	field(ZNAM, "No")
+	field(ONAM, "Yes")
+    field(SCAN, "I/O Intr")
+}
+
+record(bi, "$(P)$(Q):C$(CHAN):DATADONE")
+{
+    field(DTYP, "asynInt32")
+    field(INP, "@asyn($(PORT),$(CHAN),0)DATADONE")
+	field(ZNAM, "No")
+	field(ONAM, "Yes")
+    field(SCAN, "I/O Intr")
+}
+
+record(waveform, "$(P)$(Q):C$(CHAN):FILEPREFIX:SP")
+{
+    field(DTYP, "asynOctetWrite")
+    field(INP, "@asyn($(PORT),$(CHAN),0)FILEPREFIX")
+	field(NELM, "256")
+	field(FTVL, "CHAR")
+}
+
+record(waveform, "$(P)$(Q):C$(CHAN):FILEPREFIX")
+{
+    field(DTYP, "asynOctetRead")
+    field(INP, "@asyn($(PORT),$(CHAN),0)FILEPREFIX")
+	field(NELM, "256")
+	field(FTVL, "CHAR")
+    field(SCAN, "I/O Intr")
+}
 
 ## number of techniques loaded on channel
 record(longin, "$(P)$(Q):C$(CHAN):NUMTECH" )
@@ -164,6 +164,93 @@ record(ai, "$(P)$(Q):C$(CHAN):FREQ")
 	field(SCAN, "I/O Intr")
 	field(PREC, 3)
 	field(EGU, "Hz")
+}
+
+record(longin, "$(P)$(Q):C$(CHAN):TECHIND")
+{
+    field(DTYP, "asynInt32")
+    field(INP, "@asyn($(PORT),$(CHAN),0)DATA_TECHIND")
+	field(SCAN, "I/O Intr")
+}
+
+record(longin, "$(P)$(Q):C$(CHAN):TECHID")
+{
+    field(DTYP, "asynInt32")
+    field(INP, "@asyn($(PORT),$(CHAN),0)DATA_TECHID")
+	field(SCAN, "I/O Intr")
+}
+
+record(longin, "$(P)$(Q):C$(CHAN):LOOP")
+{
+    field(DTYP, "asynInt32")
+    field(INP, "@asyn($(PORT),$(CHAN),0)DATA_LOOP")
+	field(SCAN, "I/O Intr")
+}
+
+record(longin, "$(P)$(Q):C$(CHAN):IRQSKIPPED")
+{
+    field(DTYP, "asynInt32")
+    field(INP, "@asyn($(PORT),$(CHAN),0)DATA_IRQSKIPPED")
+	field(SCAN, "I/O Intr")
+}
+
+record(mbbi, "$(P)$(Q):C$(CHAN):HWCONF:GROUND")
+{
+    field(DTYP, "asynInt32")
+    field(INP, "@asyn($(PORT),$(CHAN),0)HWGROUND")
+    field(ZRST, "Grounded")
+	field(ZRVL, 0)
+	field(ONST, "Floating")
+	field(ONVL, 1)
+	field(SCAN, "I/O Intr")
+}
+
+record(mbbo, "$(P)$(Q):C$(CHAN):HWCONF:GROUND:SP")
+{
+    field(DTYP, "asynInt32")
+    field(ZRST, "Grounded")
+	field(ZRVL, 0)
+	field(ONST, "Floating")
+	field(ONVL, 1)
+    field(OUT, "@asyn($(PORT),$(CHAN),0)HWGROUND")
+}
+
+record(mbbi, "$(P)$(Q):C$(CHAN):HWCONF:CONN")
+{
+    field(DTYP, "asynInt32")
+    field(INP, "@asyn($(PORT),$(CHAN),0)HWCONN")
+    field(ZRST, "Standard")
+	field(ZRVL, 0)
+	field(ONST, "CE To Ground")
+	field(ONVL, 1)
+    field(TWST, "Wet to Ground")
+	field(TWVL, 2)
+    field(THST, "HV")
+	field(THVL, 3)
+	field(SCAN, "I/O Intr")
+}
+
+record(mbbo, "$(P)$(Q):C$(CHAN):HWCONF:CONN:SP")
+{
+    field(DTYP, "asynInt32")
+    field(ZRST, "Standard")
+	field(ZRVL, 0)
+	field(ONST, "CE To Ground")
+	field(ONVL, 1)
+    field(TWST, "Wet to Ground")
+	field(TWVL, 2)
+    field(THST, "HV")
+	field(THVL, 3)
+    field(OUT, "@asyn($(PORT),$(CHAN),0)HWCONN")
+}
+
+record(ai, "$(P)$(Q):C$(CHAN):DATA_START")
+{
+    field(DTYP, "asynFloat64")
+    field(INP, "@asyn($(PORT),$(CHAN),0)DATA_START")
+	field(SCAN, "I/O Intr")
+	field(PREC, 3)
+	field(EGU, "s")
 }
 
 record(mbbi, "$(P)$(Q):C$(CHAN):STATE")

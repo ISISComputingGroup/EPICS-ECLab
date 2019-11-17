@@ -2,12 +2,16 @@
 # eveery technique can have timebase
 pattern { P, Q, CHAN, PORT, TECH, INDEX, PARAM, LABEL, DESC, EGU }
 { "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "OCV", 0, "RTT", "Rest_time_T", "Rest duration", "s"}
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "OCV", 1, "RTT", "Rest_time_T", "Rest duration", "s"}
 { "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "OCV", 0, "REDE", "Record_every_dE", "Record every dE", "V"}
 { "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "OCV", 0, "REDT", "Record_every_dT", "Record every dT", "s"}
 { "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "OCV", 0, "TB", "tb", "Time base", "s"}
 { "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CA", 0, "REDT", "Record_every_dT", "Record every dT", "s"}
 { "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CA", 0, "REDI", "Record_every_dI", "Record every dI", "A"}
 { "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CA", 0, "TB", "tb", "Time base", "s"}
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CP", 0, "REDT", "Record_every_dT", "Record every dT", "s"}
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CP", 0, "REDE", "Record_every_dE", "Record every dE", "V"}
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CP", 0, "TB", "tb", "Time base", "s"}
 { "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "PEIS", 0, "IVSTEP", "Initial_Voltage_step", "Initial voltage step", "V"}
 { "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "PEIS", 0, "FVSTEP", "Final_Voltage_step", "Final voltage step", "V"}
 { "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "PEIS", 0, "DURSTEP", "Duration_step", "Step duration", "s"}
@@ -18,11 +22,3 @@ pattern { P, Q, CHAN, PORT, TECH, INDEX, PARAM, LABEL, DESC, EGU }
 { "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "PEIS", 0, "AMPV", "Amplitude_Voltage", "Sinus amplitude", "V"}
 { "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "PEIS", 0, "WFS", "Wait_for_steady", "Num period wait before each freq", ""}
 { "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "PEIS", 0, "TB", "tb", "Time base", "s"}
-{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "OCV", 1, "RTT", "Rest_time_T", "Rest duration", "s"}
-{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "OCV", 1, "REDE", "Record_every_dE", "Record every dE", "V"}
-{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "OCV", 1, "REDT", "Record_every_dT", "Record every dT", "s"}
-{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CA", 1, "REDT", "Record_every_dT", "Record every dT", "s"}
-{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CA", 1, "REDI", "Record_every_dI", "Record every dI", "A"}
-
-
-

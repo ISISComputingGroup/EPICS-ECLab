@@ -18,7 +18,7 @@ USR_CXXFLAGS += -I$(ECLABSDK)/include -DBIOLOGIC_EXPORTS
 DBD += ECLab.dbd
 
 # The following are compiled and added to the Support library
-ECLab_SRCS += ECLabParams.cpp ECLabDriver.cpp dummyFunctions.cpp
+ECLab_SRCS += ECLabParams.cpp ECLabDriver.cpp dummyFunctions.cpp ECLabCodeLookup.cpp
 ECLab_LIBS += asyn
 
 ifneq ($(findstring windows,$(EPICS_HOST_ARCH)),) 

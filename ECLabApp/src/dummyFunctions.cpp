@@ -25,31 +25,89 @@ static int my_connection_id = 2382312;
 
 bool ECLabInterface::BLSIM = false;
 
+static const char* paramTypes[] = { "int32", "boolean", "single" };
+
+static int currentTechIndex = 0;
+
 struct MyTechnique
 {
     std::string name;
+	int techIndex;
 	TEccParams_t params;
-	MyTechnique() { params.pParams = 0; }
-	MyTechnique(const char* nname, const TEccParams_t& nparams) { params.pParams = 0; copy(nname, nparams); }
-	MyTechnique(const MyTechnique& t) { params.pParams = 0; copy(t.name.c_str(), t.params); }
+	MyTechnique() : techIndex(-1) { params.pParams = 0; }
+	MyTechnique(const char* nname, int techIndex_, const TEccParams_t& nparams) { params.pParams = 0; copy(nname, techIndex_, nparams); }
+	MyTechnique(const MyTechnique& t) { params.pParams = 0; copy(t.name.c_str(), t.techIndex, t.params); }
 	
-	void copy(const char* nname, const TEccParams_t& nparams)
+	void copy(const char* nname, int techIndex_, const TEccParams_t& nparams)
 	{
 	    name = nname;
+		techIndex = techIndex_;
 	    delete params.pParams;
 		params.pParams = new TEccParam_t[nparams.len];
 		params.len = nparams.len;
 		memcpy(params.pParams, nparams.pParams,  nparams.len * sizeof(TEccParam_t));
 	}
+	
+	void update(const char* nname, int techIndex_, const TEccParams_t& nparams)
+	{
+	    if (name != nname || techIndex != techIndex_)
+		{
+			std::cerr << "update params error" << std::endl;
+			return;
+		}			
+		for(int i=0; i<nparams.len; ++i)
+		{
+			bool name_found = false, index_found = false;
+			for(int j=0; j<params.len; ++j)
+			{
+				if (!strcmp(nparams.pParams[i].ParamStr, params.pParams[j].ParamStr))
+				{
+					name_found = true;
+					if (nparams.pParams[i].ParamIndex == params.pParams[j].ParamIndex)
+					{
+						index_found = true;
+						params.pParams[j].ParamVal = nparams.pParams[i].ParamVal;
+					}
+				}
+			}
+			if (!name_found)
+			{
+				std::cerr << "Unable to find parameter " << nparams.pParams[i].ParamStr << std::endl;
+			}
+			else if (!index_found)
+			{
+				std::cerr << "Unable to find parameter index " << nparams.pParams[i].ParamIndex << " for " << nparams.pParams[i].ParamStr << std::endl;				
+			}
+		}
+	}
+	
+	double paramVal(int index)
+	{
+		int val = params.pParams[index].ParamVal;
+		int type = params.pParams[index].ParamType;
+		if (type == 0 || type == 1)
+		{
+			return val; 
+		}
+		else if (type == 2)
+		{
+			float fval;
+			BL_ConvertNumericIntoSingle(val, &fval);
+			return fval;
+		}
+		else
+		{
+			std::cerr << "param data type error" << std::endl;
+			return -1000;
+		}
+	}
+	
 	void print(std::ostream& os)
 	{
-	    os << "Technique " << name << std::endl;
+	    os << "Technique " << name << " index " << techIndex << std::endl;
 		for (int i = 0; i<params.len; ++i)
 		{
-		  	os << "Param name " << params.pParams[i].ParamStr << std::endl;
-		  	os << "Param type " << params.pParams[i].ParamType << std::endl;
-		  	os << "Param val " << params.pParams[i].ParamVal << std::endl;
-		  	os << "Param index " << params.pParams[i].ParamIndex << std::endl;
+		  	os << "Param: \"" << params.pParams[i].ParamStr << "\" (" << paramTypes[params.pParams[i].ParamType] << ") = " << paramVal(i) << " (index=" << params.pParams[i].ParamIndex << ")" << std::endl;
 		}
 	}
 };
@@ -76,6 +134,7 @@ static void init_channels()
 {
     for(int i=0; i<16; ++i)
 	{
+		memset(&(my_channels[i].info), 0, sizeof(TChannelInfos_t));
 	    my_channels[i].info.Channel = i;
 	    my_channels[i].info.State = KBIO_STATE_STOP;
 	    my_channels[i].info.NbOfTechniques = 0;
@@ -211,7 +270,8 @@ BIOLOGIC_API(int) BL_LoadTechniqueStub(int ID, uint8 channel, const char* pFName
 	    my_channels[channel].info.NbOfTechniques = 0;
 	    my_channels[channel].techniques.resize(0);
 	}
-	my_channels[channel].techniques.push_back(MyTechnique(pFName, Params));
+	int techId = my_channels[channel].info.NbOfTechniques;
+	my_channels[channel].techniques.push_back(MyTechnique(pFName, techId, Params));
 	++(my_channels[channel].info.NbOfTechniques);
 	if (DisplayParams == true)
 	{
@@ -229,7 +289,7 @@ BIOLOGIC_API(int) BL_UpdateParametersStub( int ID, uint8 channel, int TechIndx, 
 	{
 	    return -1;
 	}
-	my_channels[channel].techniques[TechIndx].copy(EccFileName, Params);
+	my_channels[channel].techniques[TechIndx].update(EccFileName, TechIndx, Params);
 	my_channels[channel].print(std::cout);
     return 0; 
 }
@@ -242,6 +302,7 @@ BIOLOGIC_API(int) BL_StartChannelStub (int ID, uint8 channel)
 	my_channels[channel].info.State = KBIO_STATE_RUN;
 	my_channels[channel].print(std::cout);
 	time(&(my_channels[channel].start));
+	currentTechIndex = 0;
     return 0; 
 }
 
@@ -259,24 +320,38 @@ BIOLOGIC_API(int) BL_GetCurrentValuesStub (int ID, uint8 channel, TCurrentValues
     DEBUG_PRINT("BL_GetCurrentValues");
 	CHECK_CONNECTION_ID(ID);
 	CHECK_CHANNEL(channel);
+	memset(pValues, 0, sizeof(TCurrentValues_t));
 	pValues->State = my_channels[channel].info.State;
-	pValues->Ece = 2;
-	pValues->Eoverflow = 3;
-	pValues->TimeBase = 1e-6;
 	pValues->MemFilled = 0;
+	pValues->TimeBase = 1e-6f;
+	pValues->Ewe = 0.0;
+	pValues->EweRangeMin = 0.0;
+	pValues->EweRangeMax = 0.0;
+	pValues->Ece = 2.0;
+	pValues->EceRangeMin = 0.0;
+	pValues->EceRangeMax = 0.0;
+	pValues->Eoverflow = 1;
+	pValues->I = 0.0;
+	pValues->IRange = 0;
+	pValues->Ioverflow = 0;
 	pValues->ElapsedTime = time(NULL) - my_channels[channel].start;
+	pValues->Freq = 0.0;
+	pValues->Rcomp = 0.0;
+	pValues->Saturation = 0;
+	pValues->OptErr = 0;
+	pValues->OptPos = 0;
 	return 0;
 }
 
-static unsigned castFloatToInt(float f)
+static int castFloatToInt(float f)
 {
 	union
 	{
 		float f;
-		unsigned u;
+		int i;
 	} cf;
 	cf.f = f;
-	return cf.u;
+	return cf.i;
 }
 
 BIOLOGIC_API(int) BL_GetDataStub( int ID, uint8 channel, TDataBuffer_t* pBuf, TDataInfos_t* pInfos, TCurrentValues_t* pValues ) 
@@ -284,52 +359,85 @@ BIOLOGIC_API(int) BL_GetDataStub( int ID, uint8 channel, TDataBuffer_t* pBuf, TD
     DEBUG_PRINT("BL_GetData");
 	CHECK_CONNECTION_ID(ID);
 	CHECK_CHANNEL(channel);
+	memset(pInfos, 0, sizeof(TDataInfos_t));
 	BL_GetCurrentValuesStub(ID, channel, pValues);
 	pInfos->NbRows = 0;
 	pInfos->NbCols = 0;
-	for(int i=0; i<my_channels[channel].techniques.size(); ++i)
+	if (my_channels[channel].info.State != KBIO_STATE_RUN)
 	{
-		size_t pos = my_channels[channel].techniques[i].name.find_last_of("\\/");
-		if (pos == std::string::npos)
+		return 0;
+	}
+	if (my_channels[channel].techniques.size() <= currentTechIndex)
+	{
+		return 0;
+	}
+	MyTechnique& my_tech = my_channels[channel].techniques[currentTechIndex];
+	pInfos->TechniqueIndex = currentTechIndex;
+	pInfos->StartTime = 0;
+	size_t pos = my_tech.name.find_last_of("\\/");
+	if (pos == std::string::npos)
+	{
+		pos = 0;
+	}
+	if (my_tech.name.substr(pos+1) == "ocv4.ecc")
+	{
+		pInfos->NbRows = 1;
+		pInfos->NbCols = 3;
+		pInfos->TechniqueID = KBIO_TECHID_OCV;
+		pInfos->ProcessIndex = 0;
+		__int64 t;
+		t = (time(NULL) - my_channels[channel].start - pInfos->StartTime) / pValues->TimeBase;
+		pBuf->data[0] = (t >> 32);	// thigh
+		pBuf->data[1] = (t & 0xffffffff);	// tlow
+		pBuf->data[2] = castFloatToInt(5);	// ewe	
+	}
+	else if (my_tech.name.substr(pos+1) == "cp4.ecc" || my_tech.name.substr(pos+1) == "ca4.ecc")
+	{
+		pInfos->NbRows = 1;
+		pInfos->NbCols = 5;
+		pInfos->TechniqueID = (my_tech.name.substr(pos+1) == "cp4.ecc" ? KBIO_TECHID_CP : KBIO_TECHID_CA);
+		pInfos->ProcessIndex = 0;
+		__int64 t;
+		t = (time(NULL) - my_channels[channel].start - pInfos->StartTime) / pValues->TimeBase;
+		pBuf->data[0] = (t >> 32);	// thigh
+		pBuf->data[1] = (t & 0xffffffff);	// tlow
+		pBuf->data[2] = castFloatToInt(5);	// ewe	
+		pBuf->data[3] = castFloatToInt(6);	// I	
+		pBuf->data[4] = 7;	// cycle	
+	}
+	else if (my_tech.name.substr(pos+1) == "peis4.ecc")
+	{
+		pInfos->TechniqueID = KBIO_TECHID_PEIS;
+		pInfos->NbRows = 1;
+		if (time(NULL) % 2 == 0)
 		{
-			pos = 0;
-		}
-		if (my_channels[channel].techniques[i].name.substr(pos+1) == "ocv4.ecc")
-		{
-			pInfos->NbRows = 1;
-			pInfos->NbCols = 3;
-			pInfos->TechniqueID = KBIO_TECHID_OCV;
 			pInfos->ProcessIndex = 0;
-			pInfos->StartTime = my_channels[channel].start;
+			pInfos->NbCols = 4;
 			__int64 t;
-			t = (time(NULL) - pInfos->StartTime) / pValues->TimeBase;
+			t = (time(NULL) - my_channels[channel].start - pInfos->StartTime) / pValues->TimeBase;
 			pBuf->data[0] = (t >> 32);	// thigh
 			pBuf->data[1] = (t & 0xffffffff);	// tlow
 			pBuf->data[2] = castFloatToInt(5);	// ewe	
+			pBuf->data[3] = castFloatToInt(5);	// I	
 		}
-		if (my_channels[channel].techniques[i].name.substr(pos+1) == "peis4.ecc")
+		else
 		{
-			pInfos->TechniqueID = KBIO_TECHID_PEIS;
-			pInfos->NbRows = 1;
-			pInfos->StartTime = my_channels[channel].start;
-			if (time(NULL) % 2 == 0)
-			{
-			    pInfos->ProcessIndex = 0;
-			    pInfos->NbCols = 4;
-			    __int64 t;
-			    t = (time(NULL) - pInfos->StartTime) / pValues->TimeBase;
-			    pBuf->data[0] = (t >> 32);	// thigh
-			    pBuf->data[1] = (t & 0xffffffff);	// tlow
-			    pBuf->data[2] = castFloatToInt(5);	// ewe	
-			    pBuf->data[3] = castFloatToInt(5);	// I	
-			}
-			else
-			{
-			    pInfos->ProcessIndex = 1;
-			    pInfos->NbCols = 14;
-			    pBuf->data[13] = castFloatToInt(10);	// time					
-			}
+			pInfos->ProcessIndex = 1;
+			pInfos->NbCols = 14;
+			pBuf->data[13] = castFloatToInt(10);	// time					
 		}
+	}
+	else if (my_tech.name.substr(pos+1) == "loop4.ecc")
+	{
+		pInfos->TechniqueID = KBIO_TECHID_LOOP;
+	}
+	else
+	{
+		std::cerr << "No data for unknown technique" << std::endl;
+	}
+	if (++currentTechIndex >= my_channels[channel].techniques.size())
+	{
+		currentTechIndex = 0;
 	}
     return 0; 
 }
@@ -351,4 +459,20 @@ BIOLOGIC_API(int) BL_GetExperimentInfosStub( int ID, uint8 channel, TExperimentI
     return 0; 
 }
 
+BIOLOGIC_API(int) BL_GetHardConfStub( int ID, uint8 channel, THardwareConf_t* pHardConf )
+{
+    DEBUG_PRINT("BL_GetHardConfStub");
+	CHECK_CONNECTION_ID(ID);
+	CHECK_CHANNEL(channel);
+	memset(pHardConf, 0, sizeof(THardwareConf_t));
+    return 0; 	
+}
+
+BIOLOGIC_API(int) BL_SetHardConfStub( int ID, uint8 channel, THardwareConf_t HardConf )
+{
+    DEBUG_PRINT("BL_SetHardConf");
+	CHECK_CONNECTION_ID(ID);
+	CHECK_CHANNEL(channel);
+    return 0; 
+}
 

@@ -148,6 +148,16 @@ struct ECLabInterface
 	    BL_CALL(BL_GetExperimentInfos, ID, channel, TExpInfos);
 	}
 	
+	static void GetHardConf(int ID, uint8 channel, THardwareConf_t* pHardConf)
+	{
+	    BL_CALL(BL_GetHardConf, ID, channel, pHardConf);
+	}
+
+	static void SetHardConf(int ID, uint8 channel, THardwareConf_t HardConf)
+	{
+	    BL_CALL(BL_SetHardConf, ID, channel, HardConf);
+	}
+
 };
 
 #undef BLCONCAT

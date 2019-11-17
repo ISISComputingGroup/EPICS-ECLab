@@ -5,5 +5,4 @@ pattern { P, Q, CHAN, PORT, TECH, INDEX, PARAM, LABEL, DESC }
 { "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "PEIS", 0, "VSFINAL", "vs_final", "Voltage step vs initial one" }
 { "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "PEIS", 0, "SWEEP", "sweep", "sweep linear/logarithmic" }
 { "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "PEIS", 0, "CORR", "Correction", "Non-stationary correction" }
-{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CV", 1, "ADE", "Average_over_dE", "Average every dE" }
 
