@@ -83,6 +83,7 @@ private:
 	int P_updateParams; // int
 	int P_dataDone; // int
 	int P_filePrefix; // string
+	int P_fileName; // string
 	int P_saveData; //int
 	int P_startChannel; // int
 	int P_stopChannel; //int
@@ -160,6 +161,7 @@ private:
 #define P_stopChannelString "STOPCHANNEL"
 #define P_currTimeBaseString	"CURR_TB"
 #define P_filePrefixString	"FILEPREFIX"
+#define P_fileNameString	"FILENAME"
 #define P_saveDataString	"SAVEDATA"
 
 #endif /* ECLABDRIVER_H */

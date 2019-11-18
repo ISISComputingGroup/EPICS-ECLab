@@ -13,6 +13,7 @@ record(bi, "$(P)$(Q):C$(CHAN):T:$(TECH):$(INDEX):$(PARAM)")
     field(DTYP, "asynInt32")
     field(INP, "@asyn($(PORT),$(INDEX),0)$(TECH)_$(PARAM)")
     field(SCAN, "I/O Intr")
+    info(archive, "VAL")
 }
 
 ## Set "$(DESC)" for technique $(TECH)
@@ -21,4 +22,8 @@ record(bo, "$(P)$(Q):C$(CHAN):T:$(TECH):$(INDEX):$(PARAM):SP")
     field(DESC, "$(DESC)")
     field(DTYP, "asynInt32")
     field(OUT, "@asyn($(PORT),$(INDEX),0)$(TECH)_$(PARAM)")
+	field(VAL, "$(VAL)")
+	field(PINI, "YES")
+    info(autosaveFields, "VAL")
+    info(archive, "VAL")
 }

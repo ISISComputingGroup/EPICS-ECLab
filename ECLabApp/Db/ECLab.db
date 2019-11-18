@@ -51,6 +51,7 @@ record(bo, "$(P)$(Q):C$(CHAN):SAVEDATA:SP")
 	field(ONAM, "Yes")
 	field(VAL, 1)
 	field(PINI, "YES")
+    info(autosaveFields, "VAL")
 }
 
 record(bi, "$(P)$(Q):C$(CHAN):SAVEDATA")
@@ -77,12 +78,24 @@ record(waveform, "$(P)$(Q):C$(CHAN):FILEPREFIX:SP")
     field(INP, "@asyn($(PORT),$(CHAN),0)FILEPREFIX")
 	field(NELM, "256")
 	field(FTVL, "CHAR")
+	field(PINI, "YES")
+    info(autosaveFields, "VAL")
+    info(archive, "VAL")
 }
 
 record(waveform, "$(P)$(Q):C$(CHAN):FILEPREFIX")
 {
     field(DTYP, "asynOctetRead")
     field(INP, "@asyn($(PORT),$(CHAN),0)FILEPREFIX")
+	field(NELM, "256")
+	field(FTVL, "CHAR")
+    field(SCAN, "I/O Intr")
+}
+
+record(waveform, "$(P)$(Q):C$(CHAN):FILENAME")
+{
+    field(DTYP, "asynOctetRead")
+    field(INP, "@asyn($(PORT),$(CHAN),0)FILENAME")
 	field(NELM, "256")
 	field(FTVL, "CHAR")
     field(SCAN, "I/O Intr")
@@ -100,14 +113,26 @@ record(longin, "$(P)$(Q):C$(CHAN):MEMFILLED" )
 {
     field(DTYP, "asynInt32")
     field(INP, "@asyn($(PORT),$(CHAN),0)MEMFILLED")
+	field(EGU, "Byte")
 	field(SCAN, "I/O Intr")
+}
+
+record(ai, "$(P)$(Q):C$(CHAN):MEMFILLED:PCT" )
+{
+    field(DTYP, "asynFloat64")
+    field(INP, "@asyn($(PORT),$(CHAN),0)MEMPCTFILLED")
+	field(SCAN, "I/O Intr")
+	field(EGU, "%")
 }
 
 record(ai, "$(P)$(Q):C$(CHAN):TB" )
 {
-    field(DTYP, "asynInt32")
+    field(DTYP, "asynFloat64")
     field(INP, "@asyn($(PORT),$(CHAN),0)CURR_TB")
+	field(EGU, "s")
+	field(PREC, 6)
 	field(SCAN, "I/O Intr")
+    info(archive, "VAL")
 }
 
 ## Current EWE Value
@@ -118,6 +143,7 @@ record(ai, "$(P)$(Q):C$(CHAN):EWE")
 	field(SCAN, "I/O Intr")
 	field(PREC, 3)
 	field(EGU, "V")
+#    info(archive, "VAL")
 }
 
 ## Current ECE Value
@@ -128,6 +154,7 @@ record(ai, "$(P)$(Q):C$(CHAN):ECE")
 	field(SCAN, "I/O Intr")
 	field(PREC, 3)
 	field(EGU, "V")
+#    info(archive, "VAL")
 }
 
 record(ai, "$(P)$(Q):C$(CHAN):I")
@@ -137,6 +164,7 @@ record(ai, "$(P)$(Q):C$(CHAN):I")
 	field(SCAN, "I/O Intr")
 	field(PREC, 3)
 	field(EGU, "A")
+#    info(archive, "VAL")
 }
 
 record(ai, "$(P)$(Q):C$(CHAN):TIME")
@@ -146,6 +174,7 @@ record(ai, "$(P)$(Q):C$(CHAN):TIME")
 	field(SCAN, "I/O Intr")
 	field(PREC, 3)
 	field(EGU, "s")
+#    info(archive, "VAL")
 }
 
 record(ai, "$(P)$(Q):C$(CHAN):RCOMP")
@@ -155,6 +184,7 @@ record(ai, "$(P)$(Q):C$(CHAN):RCOMP")
 	field(SCAN, "I/O Intr")
 	field(PREC, 3)
 	field(EGU, "ohm")
+#    info(archive, "VAL")
 }
 
 record(ai, "$(P)$(Q):C$(CHAN):FREQ")
@@ -164,6 +194,7 @@ record(ai, "$(P)$(Q):C$(CHAN):FREQ")
 	field(SCAN, "I/O Intr")
 	field(PREC, 3)
 	field(EGU, "Hz")
+#    info(archive, "VAL")
 }
 
 record(longin, "$(P)$(Q):C$(CHAN):TECHIND")
@@ -171,6 +202,7 @@ record(longin, "$(P)$(Q):C$(CHAN):TECHIND")
     field(DTYP, "asynInt32")
     field(INP, "@asyn($(PORT),$(CHAN),0)DATA_TECHIND")
 	field(SCAN, "I/O Intr")
+    info(archive, "VAL")
 }
 
 record(longin, "$(P)$(Q):C$(CHAN):TECHID")
@@ -178,6 +210,47 @@ record(longin, "$(P)$(Q):C$(CHAN):TECHID")
     field(DTYP, "asynInt32")
     field(INP, "@asyn($(PORT),$(CHAN),0)DATA_TECHID")
 	field(SCAN, "I/O Intr")
+    info(archive, "VAL")
+}
+
+record(longin, "$(P)$(Q):C$(CHAN):IOVERFLOW")
+{
+    field(DTYP, "asynInt32")
+    field(INP, "@asyn($(PORT),$(CHAN),0)IOVERFLOW")
+	field(SCAN, "I/O Intr")
+    info(archive, "VAL")
+}
+
+record(longin, "$(P)$(Q):C$(CHAN):EOVERFLOW")
+{
+    field(DTYP, "asynInt32")
+    field(INP, "@asyn($(PORT),$(CHAN),0)EOVERFLOW")
+	field(SCAN, "I/O Intr")
+    info(archive, "VAL")
+}
+
+record(longin, "$(P)$(Q):C$(CHAN):SATURATION")
+{
+    field(DTYP, "asynInt32")
+    field(INP, "@asyn($(PORT),$(CHAN),0)SATURATION")
+	field(SCAN, "I/O Intr")
+    info(archive, "VAL")
+}
+
+record(longin, "$(P)$(Q):C$(CHAN):OPTERR")
+{
+    field(DTYP, "asynInt32")
+    field(INP, "@asyn($(PORT),$(CHAN),0)OPTERR")
+	field(SCAN, "I/O Intr")
+    info(archive, "VAL")
+}
+
+record(longin, "$(P)$(Q):C$(CHAN):OPTPOS")
+{
+    field(DTYP, "asynInt32")
+    field(INP, "@asyn($(PORT),$(CHAN),0)OPTPOS")
+	field(SCAN, "I/O Intr")
+    info(archive, "VAL")
 }
 
 record(longin, "$(P)$(Q):C$(CHAN):LOOP")
@@ -185,6 +258,7 @@ record(longin, "$(P)$(Q):C$(CHAN):LOOP")
     field(DTYP, "asynInt32")
     field(INP, "@asyn($(PORT),$(CHAN),0)DATA_LOOP")
 	field(SCAN, "I/O Intr")
+#    info(archive, "VAL")
 }
 
 record(longin, "$(P)$(Q):C$(CHAN):IRQSKIPPED")
@@ -192,6 +266,7 @@ record(longin, "$(P)$(Q):C$(CHAN):IRQSKIPPED")
     field(DTYP, "asynInt32")
     field(INP, "@asyn($(PORT),$(CHAN),0)DATA_IRQSKIPPED")
 	field(SCAN, "I/O Intr")
+#    info(archive, "VAL")
 }
 
 record(mbbi, "$(P)$(Q):C$(CHAN):HWCONF:GROUND")
@@ -203,6 +278,7 @@ record(mbbi, "$(P)$(Q):C$(CHAN):HWCONF:GROUND")
 	field(ONST, "Floating")
 	field(ONVL, 1)
 	field(SCAN, "I/O Intr")
+    info(archive, "VAL")
 }
 
 record(mbbo, "$(P)$(Q):C$(CHAN):HWCONF:GROUND:SP")
@@ -213,6 +289,10 @@ record(mbbo, "$(P)$(Q):C$(CHAN):HWCONF:GROUND:SP")
 	field(ONST, "Floating")
 	field(ONVL, 1)
     field(OUT, "@asyn($(PORT),$(CHAN),0)HWGROUND")
+#	field(PINI, "YES")
+#	field(VAL, "0")
+#    info(autosaveFields, "VAL")
+#    info(archive, "VAL")
 }
 
 record(mbbi, "$(P)$(Q):C$(CHAN):HWCONF:CONN")
@@ -228,6 +308,7 @@ record(mbbi, "$(P)$(Q):C$(CHAN):HWCONF:CONN")
     field(THST, "HV")
 	field(THVL, 3)
 	field(SCAN, "I/O Intr")
+    info(archive, "VAL")
 }
 
 record(mbbo, "$(P)$(Q):C$(CHAN):HWCONF:CONN:SP")
@@ -242,6 +323,10 @@ record(mbbo, "$(P)$(Q):C$(CHAN):HWCONF:CONN:SP")
     field(THST, "HV")
 	field(THVL, 3)
     field(OUT, "@asyn($(PORT),$(CHAN),0)HWCONN")
+#	field(PINI, "YES")
+#	field(VAL, "0")
+#    info(autosaveFields, "VAL")
+#    info(archive, "VAL")
 }
 
 record(ai, "$(P)$(Q):C$(CHAN):DATA_START")
@@ -264,6 +349,7 @@ record(mbbi, "$(P)$(Q):C$(CHAN):STATE")
 	field(SCAN, "I/O Intr")
     field(DTYP, "asynInt32")
     field(INP, "@asyn($(PORT),$(CHAN),0)CURR_STATE")
+    info(archive, "VAL")
 }
 
 # erange
@@ -357,6 +443,7 @@ record(stringin, "$(P)$(Q):C$(CHAN):LOADTECH")
     field(DTYP, "asynOctetRead")
     field(INP, "@asyn($(PORT),$(CHAN),0)LOADTECH")
 	field(SCAN, "I/O Intr")
+    info(archive, "VAL")
 }
 
 record(stringin, "$(P)$(Q):C$(CHAN):DEFINETECH")
@@ -364,6 +451,7 @@ record(stringin, "$(P)$(Q):C$(CHAN):DEFINETECH")
     field(DTYP, "asynOctetRead")
     field(INP, "@asyn($(PORT),$(CHAN),0)DEFINETECH")
 	field(SCAN, "I/O Intr")
+    info(archive, "VAL")
 }
 
 ## send changed parameter values to running technique

@@ -379,6 +379,7 @@ ECLabDriver::ECLabDriver(const char *portName, const char *ip)
 	createParam(P_stopChannelString, asynParamInt32, &P_stopChannel);
 	createParam(P_dataDoneString, asynParamInt32, &P_dataDone);
 	createParam(P_filePrefixString, asynParamOctet, &P_filePrefix);
+	createParam(P_fileNameString, asynParamOctet, &P_fileName);
 	createParam(P_saveDataString, asynParamInt32, &P_saveData);
 	
 	createParam(P_currEWERangeMinString, asynParamFloat64, &P_currEWERangeMin);
@@ -530,7 +531,7 @@ void ECLabDriver::updateCvals(int chan, TCurrentValues_t& cvals)
 		char filename[256], fileprefix[256], tbuff[64];
 		getStringParam(chan, P_filePrefix, sizeof(fileprefix), fileprefix);
 		epicsTimeToStrftime(tbuff, sizeof(tbuff), "%Y%m%dT%H%M%S", &(m_start_time[chan]));
-		sprintf(filename, "%s_%s_CH%d_%d.csv", fileprefix, tbuff, chan, file_counter);
+		sprintf(filename, "%s_%s_C%d_%d.csv", fileprefix, tbuff, chan, file_counter);
 		m_generalLog[chan].open(filename, std::ios::out);					
 		m_generalLog[chan] << "AbsTime1,AbsTime2,ElapsedTime,Ewe,Ece,I,MemFilled,Rcomp,Freq,State,TimeBase,EweRangeMin,EweRangeMax,EceRangeMin,EceRangeMax,Eoverflow,Ioverflow,IRange ,Saturation,OptErr,OptPos\n";
     }
@@ -664,8 +665,8 @@ void ECLabDriver::processOCVData(std::fstream& fs, epicsTimeStamp& chan_start_ti
 	unsigned* data = dbuffer->data;
 	double t;
 	int idx, ret;
-	float ewe;
-	if (ncols != 3)
+	float ewe, ece;
+	if (ncols != 3 && ncols != 4)
 	{
 		std::cerr << "OCV: incorrect number of columns in data" << std::endl;
 		return;
@@ -680,7 +681,13 @@ void ECLabDriver::processOCVData(std::fstream& fs, epicsTimeStamp& chan_start_ti
 		idx = i * ncols;
 		t = getTime(data[idx + 0], data[idx + 1], start_time, time_base);
 		ret = BL_ConvertNumericIntoSingle(data[idx + 2], &ewe);
-		fs << getAbsTime(chan_start_time, t) << "," << t << "," << loop << "," << ewe << "\n";
+		fs << getAbsTime(chan_start_time, t) << "," << t << "," << loop << "," << ewe;
+		if (ncols == 4)
+		{
+		    ret = BL_ConvertNumericIntoSingle(data[idx + 3], &ece);
+			fs << "," << ece;
+		}
+		fs << "\n";
 	}
 }
 
@@ -794,8 +801,9 @@ void ECLabDriver::ECLabDataTask()
 				    if ( !(fs0.is_open()) )
 				    {
 					    getStringParam(i, P_filePrefix, sizeof(fileprefix), fileprefix);
-					    sprintf(filename, "%s_%s_CH%d_TI%d_OCV_%d.csv", fileprefix, tbuff, i, dinfo.TechniqueIndex, file_index[i]);
+					    sprintf(filename, "%s_%s_C%d_T%d_OCV_%d.csv", fileprefix, tbuff, i, dinfo.TechniqueIndex, file_index[i]);
 					    fs0.open(filename, std::ios::out);					
+					    setStringParam(i, P_fileName, filename);
 						fs0 << "AbsTime,Time,Loop,Ewe\n";
 				    }
 					processOCVData(fs0, m_start_time[i], dinfo.NbRows, dinfo.NbCols, dinfo.TechniqueIndex, dinfo.ProcessIndex, 
@@ -806,7 +814,8 @@ void ECLabDriver::ECLabDataTask()
 				    if ( !(fs0.is_open()) )
 				    {
 					    getStringParam(i, P_filePrefix, sizeof(fileprefix), fileprefix);
-					    sprintf(filename, "%s_%s_CH%d_TI%d_CA_%d.csv", fileprefix, tbuff, i, dinfo.TechniqueIndex, file_index[i]);
+					    sprintf(filename, "%s_%s_C%d_T%d_CA_%d.csv", fileprefix, tbuff, i, dinfo.TechniqueIndex, file_index[i]);
+					    setStringParam(i, P_fileName, filename);
 					    fs0.open(filename, std::ios::out);					
 						fs0 << "AbsTime,Time,Loop,Ewe,I,Cycle\n";
 				    }
@@ -818,7 +827,8 @@ void ECLabDriver::ECLabDataTask()
 				    if ( !(fs0.is_open()) )
 				    {
 					    getStringParam(i, P_filePrefix, sizeof(fileprefix), fileprefix);
-					    sprintf(filename, "%s_%s_CH%d_TI%d_CP_%d.csv", fileprefix, tbuff, i, dinfo.TechniqueIndex, file_index[i]);
+					    sprintf(filename, "%s_%s_C%d_T%d_CP_%d.csv", fileprefix, tbuff, i, dinfo.TechniqueIndex, file_index[i]);
+					    setStringParam(i, P_fileName, filename);
 					    fs0.open(filename, std::ios::out);					
 						fs0 << "AbsTime,Time,Loop,Ewe,I,Cycle\n";
 				    }
@@ -830,10 +840,11 @@ void ECLabDriver::ECLabDataTask()
 				    if ( !(fs0.is_open()) )
 				    {
 					    getStringParam(i, P_filePrefix, sizeof(fileprefix), fileprefix);
-					    sprintf(filename, "%s_%s_CH%d_TI%d_PEIS_%d_0.csv", fileprefix, tbuff, i, dinfo.TechniqueIndex, file_index[i]);
+					    sprintf(filename, "%s_%s_C%d_T%d_PEIS_%d_0.csv", fileprefix, tbuff, i, dinfo.TechniqueIndex, file_index[i]);
+					    setStringParam(i, P_fileName, filename);
 					    fs0.open(filename, std::ios::out);					
 						fs0 << "AbsTime,Time,Loop,Ewe,I\n";
-					    sprintf(filename, "%s_%s_CH%d_TI%d_PEIS_%d_1.csv", fileprefix, tbuff, i, dinfo.TechniqueIndex, file_index[i]);
+					    sprintf(filename, "%s_%s_C%d_T%d_PEIS_%d_1.csv", fileprefix, tbuff, i, dinfo.TechniqueIndex, file_index[i]);
 					    fs1.open(filename, std::ios::out);
 						fs1 << "AbsTime,Time,Loop,Freq,Mod Ewe,Mod I,Phase Zwe,Ewe,I,Mod Ece,Mod Ice,Phase Zce,Ece\n";
 				    }
