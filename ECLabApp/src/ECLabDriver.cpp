@@ -600,6 +600,65 @@ std::string ECLabDriver::getAbsTime(epicsTimeStamp& base, double offset)
 	return static_cast<std::string>(tbuff);
 }
 
+static unsigned countBits(unsigned v)
+{
+	unsigned c;
+    for (c = 0; v != 0; ++c)
+	{
+        v &= v - 1; // clear the least significant bit set
+	}
+	return c;
+}
+
+void ECLabDriver::processXCTRVals(std::fstream& fs, unsigned* row_data, unsigned xctr, int col_start, int ncols)
+{
+	int ret;
+	float fval;
+	if (xctr & 0x1) // ece
+	{
+	    ret = BL_ConvertNumericIntoSingle(row_data[col_start], &fval);
+		fs << "," << fval;
+		++col_start;
+	}
+	if (xctr & 0x20) // control
+	{
+	    ret = BL_ConvertNumericIntoSingle(row_data[col_start], &fval);
+		fs << "," << fval;
+		++col_start;
+	}
+	if (xctr & 0x40) // charge
+	{
+	    ret = BL_ConvertNumericIntoSingle(row_data[col_start], &fval);
+		fs << "," << fval;
+		++col_start;
+	}
+	if (xctr & 0x80) // irange
+	{
+		fs << "," << row_data[col_start];
+		++col_start;
+	}
+}
+
+void ECLabDriver::processXCTRHeader(std::fstream& fs, unsigned xctr)
+{
+	if (xctr & 0x1) // ece
+	{
+		fs << ",Ece";
+	}
+	if (xctr & 0x20) // control
+	{
+		fs << ",Control";
+	}
+	if (xctr & 0x40) // charge
+	{
+		fs << ",Q";
+	}
+	if (xctr & 0x80) // irange
+	{
+		fs << ",Irange";
+	}
+}
+
 void ECLabDriver::processPEISData(std::fstream& fs0, std::fstream& fs1, epicsTimeStamp& chan_start_time, int nrows, int ncols, int technique_index, int process_index, 
                      int loop, double start_time, double time_base, TDataBuffer_t* dbuffer)
 {
@@ -660,15 +719,21 @@ void ECLabDriver::processPEISData(std::fstream& fs0, std::fstream& fs1, epicsTim
 }
 
 void ECLabDriver::processOCVData(std::fstream& fs, epicsTimeStamp& chan_start_time, int nrows, int ncols, int technique_index, int process_index, 
-                     int loop, double start_time, double time_base, TDataBuffer_t* dbuffer)
+                     int loop, double start_time, double time_base, TDataBuffer_t* dbuffer, int xctr)
 {
 	unsigned* data = dbuffer->data;
 	double t;
 	int idx, ret;
-	float ewe, ece;
-	if (ncols != 3 && ncols != 4)
+	float ewe;
+	if (m_techniques[technique_index].name != "ocv")
 	{
-		std::cerr << "OCV: incorrect number of columns in data" << std::endl;
+		std::cerr << "OCV: not right technique" << std::endl;
+		return;
+	}
+	int nxctr = countBits(xctr);
+	if ( ncols != (3 + nxctr) )
+	{
+		std::cerr << "OCV: incorrect number of columns in data: " << ncols << " expected: " << 3 + nxctr << std::endl;
 		return;
 	}
 	if (process_index != 0)
@@ -682,27 +747,28 @@ void ECLabDriver::processOCVData(std::fstream& fs, epicsTimeStamp& chan_start_ti
 		t = getTime(data[idx + 0], data[idx + 1], start_time, time_base);
 		ret = BL_ConvertNumericIntoSingle(data[idx + 2], &ewe);
 		fs << getAbsTime(chan_start_time, t) << "," << t << "," << loop << "," << ewe;
-		if (ncols == 4)
-		{
-		    ret = BL_ConvertNumericIntoSingle(data[idx + 3], &ece);
-			fs << "," << ece;
-		}
+		processXCTRVals(fs, &(data[idx]), xctr, 3, ncols);
 		fs << "\n";
 	}
 }
 
 void ECLabDriver::processCACPData(std::fstream& fs, epicsTimeStamp& chan_start_time, int nrows, int ncols, int technique_index, int process_index, 
-                     int loop, double start_time, double time_base, TDataBuffer_t* dbuffer)
+                     int loop, double start_time, double time_base, TDataBuffer_t* dbuffer, int xctr)
 {
 	unsigned* data = dbuffer->data;
 	double t;
 	int idx, ret;
 	float ewe, current;
-	int cycle;
-	
-	if (ncols != 5)
+	int cycle;	
+	if (m_techniques[technique_index].name != "ca" && m_techniques[technique_index].name != "cp")
 	{
-		std::cerr << "CA/CP: incorrect number of columns in data" << std::endl;
+		std::cerr << "CA/CP: not right technique" << std::endl;
+		return;
+	}		
+	int nxctr = countBits(xctr);
+	if ( ncols != (5 + nxctr) )
+	{
+		std::cerr << "CA/CP: incorrect number of columns in data: " << ncols << " expected: " << 5 + nxctr << std::endl;
 		return;
 	}
 	if (process_index != 0)
@@ -717,7 +783,9 @@ void ECLabDriver::processCACPData(std::fstream& fs, epicsTimeStamp& chan_start_t
 		ret = BL_ConvertNumericIntoSingle(data[idx + 2], &ewe);
 		ret = BL_ConvertNumericIntoSingle(data[idx + 3], &current);
 		cycle = data[idx + 4];
-		fs << getAbsTime(chan_start_time, t) << "," << t << "," << loop << "," << ewe << "," << current << "," << cycle << "\n";
+		fs << getAbsTime(chan_start_time, t) << "," << t << "," << loop << "," << ewe << "," << current << "," << cycle;
+		processXCTRVals(fs, &(data[idx]), xctr, 5, ncols);
+		fs << "\n";
 	}
 }
 
@@ -782,6 +850,17 @@ void ECLabDriver::ECLabDataTask()
 				setIntegerParam(i, P_dataIRQSkipped, dinfo.IRQskipped);
                 callParamCallbacks();
 				unlock();
+				int xctr = 0, P_xctr = -1;
+				if (m_techniques.size() > dinfo.TechniqueIndex)
+				{
+					std::string param_name = m_techniques[dinfo.TechniqueIndex].name;
+					std::transform(param_name.begin(), param_name.end(), param_name.begin(), ::toupper);
+					param_name += "_XCTR";
+					if (findParam(param_name.c_str(), &P_xctr) == asynSuccess && P_xctr != -1)
+					{
+						getIntegerParam(m_techniques[dinfo.TechniqueIndex].index, P_xctr, &xctr);
+					}
+				}
 				if ( fs0.is_open() && (last_tech[i] != dinfo.TechniqueID || last_tech_index[i] != dinfo.TechniqueIndex) )
 				{
 					fs0.close();
@@ -804,10 +883,12 @@ void ECLabDriver::ECLabDataTask()
 					    sprintf(filename, "%s_%s_C%d_T%d_OCV_%d.csv", fileprefix, tbuff, i, dinfo.TechniqueIndex, file_index[i]);
 					    fs0.open(filename, std::ios::out);					
 					    setStringParam(i, P_fileName, filename);
-						fs0 << "AbsTime,Time,Loop,Ewe\n";
+						fs0 << "AbsTime,Time,Loop,Ewe";
+						processXCTRHeader(fs0, xctr);
+						fs0 << "\n";
 				    }
 					processOCVData(fs0, m_start_time[i], dinfo.NbRows, dinfo.NbCols, dinfo.TechniqueIndex, dinfo.ProcessIndex, 
-					        dinfo.loop, dinfo.StartTime, cvals.TimeBase, &dbuffer);
+					        dinfo.loop, dinfo.StartTime, cvals.TimeBase, &dbuffer, xctr);
 				}
 				else if (dinfo.TechniqueID == KBIO_TECHID_CA)
 				{
@@ -817,10 +898,12 @@ void ECLabDriver::ECLabDataTask()
 					    sprintf(filename, "%s_%s_C%d_T%d_CA_%d.csv", fileprefix, tbuff, i, dinfo.TechniqueIndex, file_index[i]);
 					    setStringParam(i, P_fileName, filename);
 					    fs0.open(filename, std::ios::out);					
-						fs0 << "AbsTime,Time,Loop,Ewe,I,Cycle\n";
+						fs0 << "AbsTime,Time,Loop,Ewe,I,Cycle";
+						processXCTRHeader(fs0, xctr);
+						fs0 << "\n";
 				    }
 					processCACPData(fs0, m_start_time[i], dinfo.NbRows, dinfo.NbCols, dinfo.TechniqueIndex, dinfo.ProcessIndex, 
-					        dinfo.loop, dinfo.StartTime, cvals.TimeBase, &dbuffer);
+					        dinfo.loop, dinfo.StartTime, cvals.TimeBase, &dbuffer, xctr);
 				}
 				else if (dinfo.TechniqueID == KBIO_TECHID_CP)
 				{
@@ -830,10 +913,12 @@ void ECLabDriver::ECLabDataTask()
 					    sprintf(filename, "%s_%s_C%d_T%d_CP_%d.csv", fileprefix, tbuff, i, dinfo.TechniqueIndex, file_index[i]);
 					    setStringParam(i, P_fileName, filename);
 					    fs0.open(filename, std::ios::out);					
-						fs0 << "AbsTime,Time,Loop,Ewe,I,Cycle\n";
+						fs0 << "AbsTime,Time,Loop,Ewe,I,Cycle";
+						processXCTRHeader(fs0, xctr);
+						fs0 << "\n";
 				    }
 					processCACPData(fs0, m_start_time[i], dinfo.NbRows, dinfo.NbCols, dinfo.TechniqueIndex, dinfo.ProcessIndex, 
-					        dinfo.loop, dinfo.StartTime, cvals.TimeBase, &dbuffer);
+					        dinfo.loop, dinfo.StartTime, cvals.TimeBase, &dbuffer, xctr);
 				}
 				else if (dinfo.TechniqueID == KBIO_TECHID_PEIS)
 				{

@@ -12,13 +12,14 @@ REM Format of technique PV is C{channel}:T:{technique}:{index}:{param}:SP
 REM index is 0 unless the technique will be specified more than once in the LOADTECH command
 
 REM this sets parameter RTT (rest time T) for technique OCV on channel 0
-caput %MYPVPREFIX%ECLAB_01:C0:T:OCV:0:RTT:SP 30
+caput %MYPVPREFIX%ECLAB_01:C0:T:OCV:0:RTT:SP 300
 caput %MYPVPREFIX%ECLAB_01:C0:T:OCV:0:REDE:SP 1
-caput %MYPVPREFIX%ECLAB_01:C0:T:OCV:0:REDT:SP 1
+caput %MYPVPREFIX%ECLAB_01:C0:T:OCV:0:REDT:SP 0.5
 caput %MYPVPREFIX%ECLAB_01:C0:T:OCV:0:TB:SP 20e-6
 caput %MYPVPREFIX%ECLAB_01:C0:T:OCV:0:IRANGE:SP 8
 caput %MYPVPREFIX%ECLAB_01:C0:T:OCV:0:ERANGE:SP 3
 caput %MYPVPREFIX%ECLAB_01:C0:T:OCV:0:BW:SP 5
+caput %MYPVPREFIX%ECLAB_01:C0:T:OCV:0:XCTR:SP 0
  
 REM after setting parameters, load technique on channel 
 REM you cannot start until you have loaded a technique, and if you 

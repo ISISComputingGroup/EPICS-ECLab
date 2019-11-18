@@ -35,7 +35,7 @@ public:
 //	void testPrintMap(techniqueMap_t);
     double getTime(unsigned thigh, unsigned tlow, double start_time, double time_base);
     void processOCVData(std::fstream& fs, epicsTimeStamp& chan_start_time, int nrows, int ncols, int technique_index, int process_index, 
-                     int loop, double start_time, double time_base, TDataBuffer_t* dbuffer);
+                     int loop, double start_time, double time_base, TDataBuffer_t* dbuffer, int xctr);
     void processPEISData(std::fstream& fs0, std::fstream& fs1, epicsTimeStamp& chan_start_time, int nrows, int ncols, int technique_index, int process_index, 
                      int loop, double start_time, double time_base, TDataBuffer_t* dbuffer);
 	void updateCvals(int chan, TCurrentValues_t& cvals);
@@ -110,10 +110,12 @@ private:
 	static void ECLabDataTaskC(void* arg);
 	void ECLabDataTask();
 	void processCACPData(std::fstream& fs, epicsTimeStamp& chan_start_time, int nrows, int ncols, int technique_index, int process_index, 
-                     int loop, double start_time, double time_base, TDataBuffer_t* dbuffer);
+                     int loop, double start_time, double time_base, TDataBuffer_t* dbuffer, int xctr);
 	void printIntParam(std::ostream& os, const char* desc, int param);
     void printDoubleParam(std::ostream& os, const char* desc, int param);
 	std::string getAbsTime(epicsTimeStamp& base, double offset);
+	void processXCTRVals(std::fstream& fs, unsigned* row_data, unsigned xctr, int col_start, int ncols);
+    void processXCTRHeader(std::fstream& fs, unsigned xctr);
 
 
 };

@@ -4,7 +4,7 @@ pattern { P, Q, CHAN, PORT, TECH, INDEX, PARAM, LABEL, DESC, EGU, VAL }
 { "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CA", 0, "IRANGE", "I_Range", "I range", "", "8" }
 { "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CA", 0, "ERANGE", "E_Range", "Ewe range", "", "3" }
 { "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CA", 0, "BW", "Bandwidth", "Bandwidth", "", "5" }
-{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CA", 0, "NSTEPS", "Step_number", "Number of steps minus 1", "", "1" }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CA", 0, "STEPN", "Step_number", "Number of steps minus 1", "", "1" }
 { "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CA", 0, "NCYCLES", "N_Cycles", "Number of times repeated", "", "0" }
 { "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "OCV", 0, "IRANGE", "I_Range", "I range", "", "8" }
 { "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "OCV", 0, "ERANGE", "E_Range", "Ewe range", "", "3" }
@@ -12,7 +12,7 @@ pattern { P, Q, CHAN, PORT, TECH, INDEX, PARAM, LABEL, DESC, EGU, VAL }
 { "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "PEIS", 0, "IRANGE", "I_Range", "I range", "", "" }
 { "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "PEIS", 0, "ERANGE", "E_Range", "Ewe range", "", "" }
 { "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "PEIS", 0, "BW", "Bandwidth", "Bandwidth", "", "" }
-{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "PEIS", 0, "NSTEPS", "Step_number", "Number of voltage steps", "", "" }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "PEIS", 0, "STEPN", "Step_number", "Number of voltage steps", "", "" }
 { "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "PEIS", 0, "NFREQ", "Frequency_number", "Number of frequencies", "", "" }
 { "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "PEIS", 0, "NAVRG", "Average_N_times", "Number of repeat times", "", "" }
 { "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "LOOP", 0, "NLOOP", "loop_N_times", "Loop N times", "", "" }
@@ -24,10 +24,12 @@ pattern { P, Q, CHAN, PORT, TECH, INDEX, PARAM, LABEL, DESC, EGU, VAL }
 { "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CP", 0, "IRANGE", "I_Range", "I range", "", "8" }
 { "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CP", 0, "ERANGE", "E_Range", "Ewe range", "", "3" }
 { "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CP", 0, "BW", "Bandwidth", "Bandwidth", "", "5" }
-{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CP", 0, "NSTEPS", "Step_number", "Number of steps minus 1", "", "1" }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CP", 0, "STEPN", "Step_number", "Number of steps minus 1", "", "1" }
 { "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CP", 0, "NCYCLES", "N_Cycles", "Number of times repeated", "", "0" }
 { "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "OCV", 1, "IRANGE", "I_Range", "I range", "", "8" }
 { "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "OCV", 1, "ERANGE", "E_Range", "Ewe range", "", "3" }
 { "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "OCV", 1, "BW", "Bandwidth", "Bandwidth", "", "5" }
-
-#{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "OCV", 0, "XCTR", "xctr", "XCTR", "", "0" }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "OCV", 0, "XCTR", "xctr", "XCTR", "", "0" }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CA", 0, "XCTR", "xctr", "XCTR", "", "0" }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CP", 0, "XCTR", "xctr", "XCTR", "", "0" }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "OCV", 1, "XCTR", "xctr", "XCTR", "", "0" }
