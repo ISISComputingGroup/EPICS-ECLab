@@ -1,4 +1,6 @@
-import genie_python.genie as g
+from genie_python import genie as g
+
+g.set_instrument(None)
 
 # set filename
 g.set_pv("ECLAB_01:C0:FILEPREFIX:SP", "c:/data/eclab", is_local=True)
@@ -11,7 +13,7 @@ g.set_pv("ECLAB_01:C0:T:OCV:0:TB:SP", 20e-6, is_local=True)
 g.set_pv("ECLAB_01:C0:T:OCV:0:IRANGE:SP", 8, is_local=True)
 g.set_pv("ECLAB_01:C0:T:OCV:0:ERANGE:SP", 3, is_local=True)
 g.set_pv("ECLAB_01:C0:T:OCV:0:BW:SP", 5, is_local=True)
-g.set_pv("ECLAB_01:C0:T:OCV:0:XCTR:SP", 0, is_local=True)
+g.set_pv("ECLAB_01:C0:T:OCV:0:XCTR:SP", 0, is_local=True) # 1
 
 # set second ocv
 g.set_pv("ECLAB_01:C0:T:OCV:1:RTT:SP", 10, is_local=True)
@@ -21,12 +23,12 @@ g.set_pv("ECLAB_01:C0:T:OCV:1:TB:SP", 20e-6, is_local=True)
 g.set_pv("ECLAB_01:C0:T:OCV:1:IRANGE:SP", 8, is_local=True)
 g.set_pv("ECLAB_01:C0:T:OCV:1:ERANGE:SP", 3, is_local=True)
 g.set_pv("ECLAB_01:C0:T:OCV:1:BW:SP", 5, is_local=True)
-g.set_pv("ECLAB_01:C0:T:OCV:1:XCTR:SP", 0, is_local=True)
+g.set_pv("ECLAB_01:C0:T:OCV:1:XCTR:SP", 0, is_local=True) # 1
 
 vsinit = [ 1, 1, 1 ]
-vstep = [ 1.0, 1.0, 1.0 ]
+istep = [ 1.0, 1.0, 1.0 ]
 durstep = [ 10.0, 11.0, 12.0 ]
-stepn = len(vstep) - 1
+stepn = len(istep) - 1
 
 g.set_pv("ECLAB_01:C0:T:CP:0:REDT:SP", 0.1, is_local=True)
 g.set_pv("ECLAB_01:C0:T:CP:0:REDE:SP", 0.1, is_local=True)
@@ -39,7 +41,7 @@ g.set_pv("ECLAB_01:C0:T:CP:0:ERANGE:SP", 3, is_local=True)
 g.set_pv("ECLAB_01:C0:T:CP:0:BW:SP", 5, is_local=True)
 g.set_pv("ECLAB_01:C0:T:CP:0:STEPN:SP", stepn, is_local=True)
 g.set_pv("ECLAB_01:C0:T:CP:0:NCYCLES:SP", 0, is_local=True)
-g.set_pv("ECLAB_01:C0:T:CP:0:XCTR:SP", 0, is_local=True)
+g.set_pv("ECLAB_01:C0:T:CP:0:XCTR:SP", 0, is_local=True) # 1 + 32 + 64
 
 vsinit = [ 1, 1, 1 ]
 vstep = [ 1.0, 1.0, 1.0 ]
@@ -57,7 +59,7 @@ g.set_pv("ECLAB_01:C0:T:CA:0:ERANGE:SP", 3, is_local=True)
 g.set_pv("ECLAB_01:C0:T:CA:0:BW:SP", 5, is_local=True)
 g.set_pv("ECLAB_01:C0:T:CA:0:STEPN:SP", stepn, is_local=True)
 g.set_pv("ECLAB_01:C0:T:CA:0:NCYCLES:SP", 0, is_local=True)
-g.set_pv("ECLAB_01:C0:T:CA:0:XCTR:SP", 0, is_local=True)
+g.set_pv("ECLAB_01:C0:T:CA:0:XCTR:SP", 0, is_local=True) # 1 + 32 + 64
 
 #g.set_pv("ECLAB_01:C0:UPDATE:SP", 1, is_local=True)
 

@@ -116,8 +116,7 @@ private:
 	std::string getAbsTime(epicsTimeStamp& base, double offset);
 	void processXCTRVals(std::fstream& fs, unsigned* row_data, unsigned xctr, int col_start, int ncols);
     void processXCTRHeader(std::fstream& fs, unsigned xctr);
-
-
+	const char* techName(int tech);
 };
 
 #define NUM_ECLAB_PARAMS    (&LAST_ECLAB_PARAM - &FIRST_ECLAB_PARAM + 1)

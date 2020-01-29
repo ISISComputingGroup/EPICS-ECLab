@@ -2,3 +2,5 @@
 pattern { P, Q, CHAN, PORT, TECH, INDEX, PARAM, LABEL, DESC, NELM }
 { "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CA", 0, "VSINIT", "vs_initial", "Voltage step vs initial one", 100 }
 { "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CP", 0, "VSINIT", "vs_initial", "Voltage step vs initial one", 100 }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CALIMIT", 0, "VSINIT", "vs_initial", "Voltage step vs initial one", 20 }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CPLIMIT", 0, "VSINIT", "vs_initial", "Voltage step vs initial one", 20 }

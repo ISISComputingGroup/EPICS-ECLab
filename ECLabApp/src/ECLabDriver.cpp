@@ -789,6 +789,29 @@ void ECLabDriver::processCACPData(std::fstream& fs, epicsTimeStamp& chan_start_t
 	}
 }
 
+const char* ECLabDriver::techName(int tech)
+{
+	switch(tech)
+	{
+		case KBIO_TECHID_NONE:
+		    return "NONE";
+		case KBIO_TECHID_CA:
+		    return "CA";
+		case KBIO_TECHID_CP:
+		    return "CP";
+		case KBIO_TECHID_CALIMIT:
+		    return "CALIMIT";
+		case KBIO_TECHID_CPLIMIT:
+		    return "CPLIMIT";
+		case KBIO_TECHID_OCV:
+		    return "OCV";
+		case KBIO_TECHID_PEIS:
+		    return "PEIS";
+		default:
+			return "UNKNOWN";
+	}	
+}
+
 void ECLabDriver::ECLabDataTask() 
 {
     TCurrentValues_t cvals;
@@ -890,27 +913,14 @@ void ECLabDriver::ECLabDataTask()
 					processOCVData(fs0, m_start_time[i], dinfo.NbRows, dinfo.NbCols, dinfo.TechniqueIndex, dinfo.ProcessIndex, 
 					        dinfo.loop, dinfo.StartTime, cvals.TimeBase, &dbuffer, xctr);
 				}
-				else if (dinfo.TechniqueID == KBIO_TECHID_CA)
+				else if (dinfo.TechniqueID == KBIO_TECHID_CA || dinfo.TechniqueID == KBIO_TECHID_CP || 
+				         dinfo.TechniqueID == KBIO_TECHID_CALIMIT || dinfo.TechniqueID == KBIO_TECHID_CPLIMIT)
 				{
+					const char* prefix = techName(dinfo.TechniqueID);
 				    if ( !(fs0.is_open()) )
 				    {
 					    getStringParam(i, P_filePrefix, sizeof(fileprefix), fileprefix);
-					    sprintf(filename, "%s_%s_C%d_T%d_CA_%d.csv", fileprefix, tbuff, i, dinfo.TechniqueIndex, file_index[i]);
-					    setStringParam(i, P_fileName, filename);
-					    fs0.open(filename, std::ios::out);					
-						fs0 << "AbsTime,Time,Loop,Ewe,I,Cycle";
-						processXCTRHeader(fs0, xctr);
-						fs0 << "\n";
-				    }
-					processCACPData(fs0, m_start_time[i], dinfo.NbRows, dinfo.NbCols, dinfo.TechniqueIndex, dinfo.ProcessIndex, 
-					        dinfo.loop, dinfo.StartTime, cvals.TimeBase, &dbuffer, xctr);
-				}
-				else if (dinfo.TechniqueID == KBIO_TECHID_CP)
-				{
-				    if ( !(fs0.is_open()) )
-				    {
-					    getStringParam(i, P_filePrefix, sizeof(fileprefix), fileprefix);
-					    sprintf(filename, "%s_%s_C%d_T%d_CP_%d.csv", fileprefix, tbuff, i, dinfo.TechniqueIndex, file_index[i]);
+					    sprintf(filename, "%s_%s_C%d_T%d_%s_%d.csv", fileprefix, tbuff, i, dinfo.TechniqueIndex, prefix, file_index[i]);
 					    setStringParam(i, P_fileName, filename);
 					    fs0.open(filename, std::ios::out);					
 						fs0 << "AbsTime,Time,Loop,Ewe,I,Cycle";

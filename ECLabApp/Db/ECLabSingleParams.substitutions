@@ -8,9 +8,15 @@ pattern { P, Q, CHAN, PORT, TECH, INDEX, PARAM, LABEL, DESC, EGU, VAL }
 { "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CA", 0, "REDT", "Record_every_dT", "Record every dT", "s", "1e-6"}
 { "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CA", 0, "REDI", "Record_every_dI", "Record every dI", "A", "1e-3"}
 { "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CA", 0, "TB", "tb", "Time base", "s", "25e-6"}
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CALIMIT", 0, "REDT", "Record_every_dT", "Record every dT", "s", "1e-6"}
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CALIMIT", 0, "REDI", "Record_every_dI", "Record every dI", "A", "1e-3"}
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CALIMIT", 0, "TB", "tb", "Time base", "s", "40e-6"}
 { "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CP", 0, "REDT", "Record_every_dT", "Record every dT", "s", "50e-3"}
 { "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CP", 0, "REDE", "Record_every_dE", "Record every dE", "V", "5e-3"}
 { "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CP", 0, "TB", "tb", "Time base", "s", "25e-6"}
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CPLIMIT", 0, "REDT", "Record_every_dT", "Record every dT", "s", "50e-3"}
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CPLIMIT", 0, "REDE", "Record_every_dE", "Record every dE", "V", "5e-3"}
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CPLIMIT", 0, "TB", "tb", "Time base", "s", "40e-6"}
 { "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "PEIS", 0, "IVSTEP", "Initial_Voltage_step", "Initial voltage step", "V", ""}
 { "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "PEIS", 0, "FVSTEP", "Final_Voltage_step", "Final voltage step", "V", ""}
 { "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "PEIS", 0, "DURSTEP", "Duration_step", "Step duration", "s", ""}

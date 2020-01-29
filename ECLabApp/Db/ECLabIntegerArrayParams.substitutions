@@ -1,3 +1,11 @@
 # LABEL is parameter name in ECLab, PARAM is name withing ASYN/EPICS DB
 pattern { P, Q, CHAN, PORT, TECH, INDEX, PARAM, LABEL, DESC, EGU, NELM }
 { "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "LASV", 0, "NUMP", "Period_number", "Number of periods", "", 20 }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CALIMIT", 0, "TEST1CONF", "Test1_Config", "Config of Test1 by step", "", 20 }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CALIMIT", 0, "TEST2CONF", "Test2_Config", "Config of Test2 by step", "", 20 }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CALIMIT", 0, "TEST3CONF", "Test3_Config", "Config of Test3 by step", "", 20 }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CALIMIT", 0, "EXITCOND", "Exit_Cond", "Exit condition", "", 20 }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CPLIMIT", 0, "TEST1CONF", "Test1_Config", "Config of Test1 by step", "", 20 }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CPLIMIT", 0, "TEST2CONF", "Test2_Config", "Config of Test2 by step", "", 20 }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CPLIMIT", 0, "TEST3CONF", "Test3_Config", "Config of Test3 by step", "", 20 }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CPLIMIT", 0, "EXITCOND", "Exit_Cond", "Exit condition", "", 20 }
