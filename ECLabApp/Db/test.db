@@ -1,0 +1,35 @@
+record(mbbi, "$(P)$(Q):C$(CHAN):HWCONF:CONN")
+{
+    field(DTYP, "asynInt32")
+    field(INP, "@asyn($(PORT),$(CHAN),0)HWCONN")
+    field(ZRST, "ERANGE_2_5")
+	field(ZRVL, 0)
+	field(ONST, "ERANGE_5")
+	field(ONVL, 1)
+	field(TWST, "ERANGE_10")
+	field(TWVL, 2)
+	field(THST, "ERANGE_AUTO")
+	field(THVL, 3)
+	field(SCAN, "I/O Intr")
+}
+
+    field(ZRST, "ERANGE_2_5")
+	field(ZRVL, 0)
+	field(ONST, "ERANGE_5")
+	field(ONVL, 1)
+	field(TWST, "ERANGE_10")
+	field(TWVL, 2)
+	field(THST, "ERANGE_AUTO")
+	field(THVL, 3)
+
+
+
+record(mbbo, "$(P)$(Q):C$(CHAN):HWCONF:CONN:SP")
+{
+    field(DTYP, "asynInt32")
+    field(ZRST, "Standard")
+	field(ZRVL, 0)
+	field(ONST, "CE To Ground")
+	field(ONVL, 1)
+    field(OUT, "@asyn($(PORT),$(CHAN),0)HWCONN")
+}
