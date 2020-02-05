@@ -39,3 +39,8 @@ BIOLOGIC_API(int) BL_GetDataStub( int ID, uint8 channel, TDataBuffer_t* pBuf, TD
 BIOLOGIC_API(int) BL_SetExperimentInfosStub( int ID, uint8 channel, TExperimentInfos_t TExpInfos );
 
 BIOLOGIC_API(int) BL_GetExperimentInfosStub( int ID, uint8 channel, TExperimentInfos_t* TExpInfos );
+
+BIOLOGIC_API(int) BL_GetHardConfStub( int ID, uint8 channel, THardwareConf_t* pHardConf );
+
+BIOLOGIC_API(int) BL_SetHardConfStub( int ID, uint8 channel, THardwareConf_t HardConf );
+

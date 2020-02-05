@@ -35,6 +35,7 @@
 #include "ECLabInterface.h"
 #include "ECLabDriver.h"
 #include "ECLabParams.h"
+#include "ECLabCodeLookup.h"
 
 #include <epicsExport.h>
 
@@ -163,11 +164,11 @@ asynStatus ECLabDriver::writeFloat64(asynUser *pasynUser, epicsFloat64 value)
 	const char *paramName = NULL;
 	getParamName(function, &paramName);
 	const char* functionName = "writeFloat64";
-	int addr = 0; // channel number
+	int addr = 0; // channel number, but for params is asyn addr
 	getAddress(pasynUser, &addr);
 	try
 	{
-		setECSingleParam(this, addr, function, value);  // need to include addr at some point
+		setECSingleParam(this, addr, function, value);  // need to include channel at some point
 		asynPrint(pasynUser, ASYN_TRACEIO_DRIVER, 
 			"%s:%s: function=%d, name=%s, value=%f\n", 
 			driverName, functionName, function, paramName, value);
@@ -191,18 +192,23 @@ asynStatus ECLabDriver::writeInt32(asynUser *pasynUser, epicsInt32 value)
 	const char *paramName = NULL;
 	getParamName(function, &paramName);
 	const char* functionName = "writeInt32";
-	int addr = 0; // channel number
+	int addr = 0; // channel number, but for params is asyn addr
 	getAddress(pasynUser, &addr);
 
 	try
 	{
 		if (function == P_startChannel)
         {
-			 ECLabInterface::StartChannel(m_ID, addr);
+			epicsTimeGetCurrent(&(m_start_time[addr]));
+			ECLabInterface::StartChannel(m_ID, addr);
         }
 		else if (function == P_stopChannel)
         {
 			ECLabInterface::StopChannel(m_ID, addr);
+			if (m_generalLog[addr].is_open())
+			{
+				m_generalLog[addr].close();
+			}
 //			TExperimentInfos_t TExpInfos;
 //			ECLabInterface::GetExperimentInfos(m_ID, addr, &TExpInfos );
 //			std::cerr << "Exp info time " << TExpInfos.TimeHMS << " filename " << TExpInfos.Filename << std::endl;
@@ -225,6 +231,20 @@ asynStatus ECLabDriver::writeInt32(asynUser *pasynUser, epicsInt32 value)
 				    ECLabInterface::UpdateParameters(m_ID, addr, i, params, const_cast<char*>(ecc_file.c_str()));
 				}
 			}
+		}
+		else if (function == P_HWConn)
+		{
+			ECLabInterface::GetHardConf(m_ID, addr, &m_hwconf);
+			m_hwconf.Conn = value;
+			ECLabInterface::SetHardConf(m_ID, addr, m_hwconf);
+			setIntegerParam(addr, P_HWConn, value);	
+		}
+		else if (function == P_HWGround)
+		{
+			ECLabInterface::GetHardConf(m_ID, addr, &m_hwconf);
+			m_hwconf.Ground = value;
+			ECLabInterface::SetHardConf(m_ID, addr, m_hwconf);
+			setIntegerParam(addr, P_HWGround, value);	
 		}
 		else if (function == P_saveData)
 		{
@@ -249,12 +269,68 @@ asynStatus ECLabDriver::writeInt32(asynUser *pasynUser, epicsInt32 value)
 	}
 }
 
+asynStatus ECLabDriver::writeFloat32Array(asynUser *pasynUser, epicsFloat32 *value, size_t nElements)
+{
+	int function = pasynUser->reason;
+	int addr = 0;
+	getAddress(pasynUser, &addr);
+	setECSingleArrayParam(this, addr, function, value, nElements);
+	return asynSuccess;
+}
+
+asynStatus ECLabDriver::writeInt32Array(asynUser *pasynUser, epicsInt32 *value, size_t nElements)
+{
+	int function = pasynUser->reason;
+	int addr = 0;
+	getAddress(pasynUser, &addr);
+	setECIntegerArrayParam(this, addr, function, value, nElements);
+	return asynSuccess;
+}
+
+asynStatus ECLabDriver::writeInt8Array(asynUser *pasynUser, epicsInt8 *value, size_t nElements)
+{
+	int function = pasynUser->reason;
+	int addr = 0;
+	getAddress(pasynUser, &addr);
+	setECBooleanArrayParam(this, addr, function, value, nElements);
+	return asynSuccess;
+}
+
+void ECLabDriver::printIntParam(std::ostream& os, const char* desc, int param)
+{
+	int value;
+	getIntegerParam(param, &value);
+	os << desc << "=" << value << std::endl;
+}
+
+void ECLabDriver::printDoubleParam(std::ostream& os, const char* desc, int param)
+{
+	double value;
+	getDoubleParam(param, &value);
+	os << desc << "=" << value << std::endl;
+}
+
 /// EPICS driver report function for iocsh dbior command
 void ECLabDriver::report(FILE* fp, int details)
 {
 	fprintf(fp, "ECLabDriver report\n");
 	std::ostringstream oss;
-	printParams(oss);
+
+	printIntParam(oss, "Number of techniques", P_numTech);
+	printIntParam(oss, "Mem filled", P_memFilled);
+	printIntParam(oss, "Mem size", P_memSize);
+	printDoubleParam(oss, "Mem percent filled", P_memPercentFilled);
+	printDoubleParam(oss, "TIME", P_currTIME);
+	printDoubleParam(oss, "EWE", P_currEWE);
+	printDoubleParam(oss, "ECE", P_currECE);
+	printDoubleParam(oss, "I", P_currI);
+	printDoubleParam(oss, "RCOMP", P_currRCOMP);
+	printDoubleParam(oss, "FREQ", P_currFREQ);
+	printIntParam(oss, "State", P_currSTATE);
+	printDoubleParam(oss, "TIMEBASE", P_currTimeBase);
+
+	printParams(this, oss);
+
 	fwrite(oss.str().c_str(), 1, oss.str().size(), fp); 
 	asynPortDriver::report(fp, details);
 }
@@ -286,6 +362,8 @@ ECLabDriver::ECLabDriver(const char *portName, const char *ip)
 	createParam(P_numSlotsString, asynParamInt32, &P_numSlots);
 	createParam(P_numTechString, asynParamInt32, &P_numTech);
 	createParam(P_memFilledString, asynParamInt32, &P_memFilled);
+	createParam(P_memSizeString, asynParamInt32, &P_memSize);
+	createParam(P_memPercentFilledString, asynParamFloat64, &P_memPercentFilled);
 	createParam(P_currEWEString, asynParamFloat64, &P_currEWE);
 	createParam(P_currECEString, asynParamFloat64, &P_currECE);
 	createParam(P_currIString, asynParamFloat64, &P_currI);
@@ -301,8 +379,29 @@ ECLabDriver::ECLabDriver(const char *portName, const char *ip)
 	createParam(P_stopChannelString, asynParamInt32, &P_stopChannel);
 	createParam(P_dataDoneString, asynParamInt32, &P_dataDone);
 	createParam(P_filePrefixString, asynParamOctet, &P_filePrefix);
+	createParam(P_fileNameString, asynParamOctet, &P_fileName);
 	createParam(P_saveDataString, asynParamInt32, &P_saveData);
 	
+	createParam(P_currEWERangeMinString, asynParamFloat64, &P_currEWERangeMin);
+	createParam(P_currEWERangeMaxString, asynParamFloat64, &P_currEWERangeMax);
+	createParam(P_currECERangeMinString, asynParamFloat64, &P_currECERangeMin);
+	createParam(P_currECERangeMaxString, asynParamFloat64, &P_currECERangeMax);
+	createParam(P_currEOverflowString, asynParamInt32, &P_currEOverflow);
+	createParam(P_currIOverflowString, asynParamInt32, &P_currIOverflow);
+	createParam(P_currIRangeString, asynParamInt32, &P_currIRange);
+	createParam(P_currSaturationString, asynParamInt32, &P_currSaturation);
+	createParam(P_currOptErrString, asynParamInt32, &P_currOptErr);
+	createParam(P_currOptPosString, asynParamInt32, &P_currOptPos);
+	
+	createParam(P_dataTechIndString, asynParamInt32, &P_dataTechInd);
+	createParam(P_dataTechIDString, asynParamInt32, &P_dataTechID);
+	createParam(P_dataLoopString, asynParamInt32, &P_dataLoop);
+	createParam(P_dataIRQSkippedString, asynParamInt32, &P_dataIRQSkipped);
+	createParam(P_dataStartTimeString, asynParamFloat64, &P_dataStartTime);
+
+	createParam(P_HWConnString, asynParamInt32, &P_HWConn);
+	createParam(P_HWGroundString, asynParamInt32, &P_HWGround);
+
     setStringParam(P_version, "unknown");
     setStringParam(P_host, "unknown");
 	setIntegerParam(P_devCode, KBIO_DEV_UNKNOWN);
@@ -316,28 +415,49 @@ ECLabDriver::ECLabDriver(const char *portName, const char *ip)
 	if ( !strcmp(ip, "SIM") )
 	{
 	    ECLabInterface::BLSIM = true;
+		std::cerr << "Enabling simulation mode" << std::endl;
 	}
 	
 	char version[32];
 	unsigned ver_size = sizeof(version);
 	ECLabInterface::GetLibVersion(version, &ver_size);
 	setStringParam(P_version, version);
+	std::cerr << "ECLab software library version: " << version << std::endl;
 	unsigned int timeout = 5;
+	std::cerr << "Connecting to " << ip << std::endl;
 	ECLabInterface::Connect(const_cast<char *>(ip), timeout, &m_ID, &m_infos);
 	ECLabInterface::testConnect(m_ID);
+	std::cerr << "Connected to device code " << m_infos.DeviceCode << " which has " << m_infos.RAMSize << " MBytes RAM" << std::endl;
+	std::cerr << "Device firmware version: " << m_infos.FirmwareVersion << " (" << m_infos.FirmwareDate_yyyy << "/" << m_infos.FirmwareDate_mm << "/" << m_infos.FirmwareDate_dd << ")" << std::endl;
 
-	uint8 chan = 1;
-	int res;
+    // loads firmware on first channel (first array element = 1)
+	uint8 chans[] = { 1 };
+	int res[] = { 0 };
 	std::string kernel_file = ecc_dir + "kernel4.bin";
 	std::replace(kernel_file.begin(), kernel_file.end(), '/', '\\');
 	std::string xlx_file = ecc_dir + "Vmp_iv_0395_aa.xlx";
 	std::replace(xlx_file.begin(), xlx_file.end(), '/', '\\');
-	ECLabInterface::LoadFirmware(m_ID, &chan, &res, 1, 0, 0, kernel_file.c_str(), xlx_file.c_str());
-
+	ECLabInterface::LoadFirmware(m_ID, chans, res, 1, 0, 0, kernel_file.c_str(), xlx_file.c_str());
+	if (res[0] < 0)
+	{
+		std::cerr << "Error loading firmware on channel 0: " << res[0] << std::endl;
+	}
+	TChannelInfos_t cinfo;
+	ECLabInterface::GetChannelInfos(m_ID, 0, &cinfo);
+	std::cerr << "Board version: " << cinfo.BoardVersion << " Board serial number: " <<  cinfo.BoardSerialNumber << " FirmwareCode: \"" 
+	<< firmwareCodeLookup(cinfo.FirmwareCode) << "\" Firmware version: " << cinfo.FirmwareVersion << " xilinx version: " << cinfo.XilinxVersion << std::endl;
+	
 	setStringParam(P_host, ip);
 	setIntegerParam(P_devCode, m_infos.DeviceCode);
 	setIntegerParam(P_numChannels, m_infos.NumberOfChannels);
 	setIntegerParam(P_numSlots, m_infos.NumberOfSlots);
+	
+	ECLabInterface::GetHardConf(m_ID, 0, &m_hwconf);
+	setIntegerParam(0, P_HWConn, m_hwconf.Conn);
+	setIntegerParam(0, P_HWGround, m_hwconf.Ground);
+	
+	epicsTimeGetCurrent(&(m_start_time[0])); // initialise to sensible value, need to do other channels
+
 	// Create the thread for background tasks (not used at present, could be used for I/O intr scanning) 
 	if (epicsThreadCreate("ECLabValuesTask",
 		epicsThreadPriorityMedium,
@@ -377,7 +497,8 @@ void ECLabDriver::ECLabDataTaskC(void* arg)
 }
 
 void ECLabDriver::updateCvals(int chan, TCurrentValues_t& cvals)
-{ 
+{
+	static int file_counter = 0;
 	setIntegerParam(chan, P_memFilled, cvals.MemFilled);
 	setDoubleParam(chan, P_currEWE, cvals.Ewe);
 	setDoubleParam(chan, P_currECE, cvals.Ece);
@@ -387,6 +508,39 @@ void ECLabDriver::updateCvals(int chan, TCurrentValues_t& cvals)
 	setDoubleParam(chan, P_currFREQ, cvals.Freq);
 	setIntegerParam(chan, P_currSTATE, cvals.State);
 	setDoubleParam(chan, P_currTimeBase, cvals.TimeBase);
+
+	setDoubleParam(chan, P_currEWERangeMin, cvals.EweRangeMin);
+	setDoubleParam(chan, P_currEWERangeMax, cvals.EweRangeMax);
+	setDoubleParam(chan, P_currECERangeMin, cvals.EceRangeMin);
+	setDoubleParam(chan, P_currECERangeMax, cvals.EceRangeMax);
+	
+	setIntegerParam(chan, P_currEOverflow, cvals.Eoverflow);
+	setIntegerParam(chan, P_currIOverflow, cvals.Ioverflow);
+	setIntegerParam(chan, P_currIRange, cvals.IRange);
+	setIntegerParam(chan, P_currSaturation, cvals.Saturation);
+	setIntegerParam(chan, P_currOptErr, cvals.OptErr);
+	setIntegerParam(chan, P_currOptPos, cvals.OptPos);
+
+	if (cvals.State == KBIO_STATE_STOP && cvals.MemFilled == 0 && m_generalLog[chan].is_open())
+	{
+		m_generalLog[chan].close();
+		++file_counter;
+	}	
+	if (cvals.State != KBIO_STATE_STOP && !m_generalLog[chan].is_open())
+	{
+		char filename[256], fileprefix[256], tbuff[64];
+		getStringParam(chan, P_filePrefix, sizeof(fileprefix), fileprefix);
+		epicsTimeToStrftime(tbuff, sizeof(tbuff), "%Y%m%dT%H%M%S", &(m_start_time[chan]));
+		sprintf(filename, "%s_%s_C%d_%d.csv", fileprefix, tbuff, chan, file_counter);
+		m_generalLog[chan].open(filename, std::ios::out);					
+		m_generalLog[chan] << "AbsTime1,AbsTime2,ElapsedTime,Ewe,Ece,I,MemFilled,Rcomp,Freq,State,TimeBase,EweRangeMin,EweRangeMax,EceRangeMin,EceRangeMax,Eoverflow,Ioverflow,IRange ,Saturation,OptErr,OptPos\n";
+    }
+	if (m_generalLog[chan].is_open())
+	{
+	    epicsTimeStamp ts;
+	    epicsTimeGetCurrent(&ts);
+		m_generalLog[chan] << getAbsTime(ts, 0.0) << "," <<  getAbsTime(m_start_time[chan], cvals.ElapsedTime) << "," << cvals.ElapsedTime << "," << cvals.Ewe << "," << cvals.Ece << "," << cvals.I << "," << cvals.MemFilled << "," << cvals.Rcomp << "," << cvals.Freq << "," << cvals.State << "," << cvals.TimeBase << "," << cvals.EweRangeMin << "," << cvals.EweRangeMax << "," << cvals.EceRangeMin << "," << cvals.EceRangeMax << "," << cvals.Eoverflow << "," << cvals.Ioverflow << "," << cvals.IRange << "," << cvals.Saturation << "," << cvals.OptErr << "," << cvals.OptPos << "\n"; 
+	}
 }
 
 void ECLabDriver::ECLabValuesTask() 
@@ -416,6 +570,8 @@ void ECLabDriver::ECLabValuesTask()
 				lock();
 				updateCvals(i, cvals);
 				setIntegerParam(i, P_numTech, cinfo.NbOfTechniques);
+				setIntegerParam(i, P_memSize, cinfo.MemSize);
+				setDoubleParam(i, P_memPercentFilled, 100.0 * static_cast<double>(cinfo.MemFilled) / static_cast<double>(cinfo.MemSize));
 				
 //				if (len_buffer > 0)
 //				{
@@ -434,7 +590,76 @@ double ECLabDriver::getTime(unsigned thigh, unsigned tlow, double start_time, do
     return (((__int64)thigh << 32) + tlow) * time_base + start_time;
 }
 
-void ECLabDriver::processPEISData(std::fstream& fs0, std::fstream& fs1, int nrows, int ncols, int technique_index, int process_index, 
+std::string ECLabDriver::getAbsTime(epicsTimeStamp& base, double offset)
+{
+	char tbuff[64];
+	epicsTime abs_time(base);
+	abs_time += offset;
+	abs_time.strftime(tbuff, sizeof(tbuff), "%Y-%m-%dT%H:%M:%S.%03f");
+//	abs_time.strftime(tbuff, sizeof(tbuff), "%H:%M:%S.%03f");
+	return static_cast<std::string>(tbuff);
+}
+
+static unsigned countBits(unsigned v)
+{
+	unsigned c;
+    for (c = 0; v != 0; ++c)
+	{
+        v &= v - 1; // clear the least significant bit set
+	}
+	return c;
+}
+
+void ECLabDriver::processXCTRVals(std::fstream& fs, unsigned* row_data, unsigned xctr, int col_start, int ncols)
+{
+	int ret;
+	float fval;
+	if (xctr & 0x1) // ece
+	{
+	    ret = BL_ConvertNumericIntoSingle(row_data[col_start], &fval);
+		fs << "," << fval;
+		++col_start;
+	}
+	if (xctr & 0x20) // control
+	{
+	    ret = BL_ConvertNumericIntoSingle(row_data[col_start], &fval);
+		fs << "," << fval;
+		++col_start;
+	}
+	if (xctr & 0x40) // charge
+	{
+	    ret = BL_ConvertNumericIntoSingle(row_data[col_start], &fval);
+		fs << "," << fval;
+		++col_start;
+	}
+	if (xctr & 0x80) // irange
+	{
+		fs << "," << row_data[col_start];
+		++col_start;
+	}
+}
+
+void ECLabDriver::processXCTRHeader(std::fstream& fs, unsigned xctr)
+{
+	if (xctr & 0x1) // ece
+	{
+		fs << ",Ece";
+	}
+	if (xctr & 0x20) // control
+	{
+		fs << ",Control";
+	}
+	if (xctr & 0x40) // charge
+	{
+		fs << ",Q";
+	}
+	if (xctr & 0x80) // irange
+	{
+		fs << ",Irange";
+	}
+}
+
+void ECLabDriver::processPEISData(std::fstream& fs0, std::fstream& fs1, epicsTimeStamp& chan_start_time, int nrows, int ncols, int technique_index, int process_index, 
                      int loop, double start_time, double time_base, TDataBuffer_t* dbuffer)
 {
 	unsigned* data = dbuffer->data;
@@ -456,7 +681,7 @@ void ECLabDriver::processPEISData(std::fstream& fs0, std::fstream& fs1, int nrow
 		    t = getTime(data[idx + 0], data[idx + 1], start_time, time_base);
 			BL_ConvertNumericIntoSingle(data[idx + 2], &ewe);
 			BL_ConvertNumericIntoSingle(data[idx + 3], &currI);
-			fs0 << t << "," << ewe << "," << currI << "\n";
+			fs0 << getAbsTime(chan_start_time, t) << "," << t << "," << loop << "," << ewe << "," << currI << "\n";
 		}
 	}
 	else if (process_index == 1)
@@ -480,24 +705,40 @@ void ECLabDriver::processPEISData(std::fstream& fs0, std::fstream& fs1, int nrow
 			BL_ConvertNumericIntoSingle(data[idx + 9], &phaseZce);
 			BL_ConvertNumericIntoSingle(data[idx + 10], &ece);
 			BL_ConvertNumericIntoSingle(data[idx + 13], &tf);
-			fs1 << tf << "," << freq << "," << eweMod
+			fs1 << getAbsTime(chan_start_time, tf) << "," << tf << "," << loop << "," << freq << "," << eweMod
                 << "," << currIMod << "," << phaseZwe << "," << ewe	
                 << "," << currI << "," << eceMod << "," << iceMod	
                 << "," << phaseZce << "," << ece << std::endl;
 		}		
 	}
+	else
+	{
+		std::cerr << "PEIS: incorrect process index" << std::endl;
+		return;
+	}
 }
 
-void ECLabDriver::processOCVData(std::fstream& fs, int nrows, int ncols, int technique_index, int process_index, 
-                     int loop, double start_time, double time_base, TDataBuffer_t* dbuffer)
+void ECLabDriver::processOCVData(std::fstream& fs, epicsTimeStamp& chan_start_time, int nrows, int ncols, int technique_index, int process_index, 
+                     int loop, double start_time, double time_base, TDataBuffer_t* dbuffer, int xctr)
 {
 	unsigned* data = dbuffer->data;
 	double t;
 	int idx, ret;
 	float ewe;
-	if (ncols != 3)
+	if (m_techniques[technique_index].name != "ocv")
 	{
-		std::cerr << "OCV: incorrect number of columns in data" << std::endl;
+		std::cerr << "OCV: not right technique" << std::endl;
+		return;
+	}
+	int nxctr = countBits(xctr);
+	if ( ncols != (3 + nxctr) )
+	{
+		std::cerr << "OCV: incorrect number of columns in data: " << ncols << " expected: " << 3 + nxctr << std::endl;
+		return;
+	}
+	if (process_index != 0)
+	{
+		std::cerr << "OCV: incorrect process index" << std::endl;
 		return;
 	}
 	for(int i=0; i<nrows; ++i)
@@ -505,9 +746,70 @@ void ECLabDriver::processOCVData(std::fstream& fs, int nrows, int ncols, int tec
 		idx = i * ncols;
 		t = getTime(data[idx + 0], data[idx + 1], start_time, time_base);
 		ret = BL_ConvertNumericIntoSingle(data[idx + 2], &ewe);
-//		fs << loop << "," << technique_index << "," << t << "," << ewe << "\n";
-		fs << t << "," << ewe << "\n";
+		fs << getAbsTime(chan_start_time, t) << "," << t << "," << loop << "," << ewe;
+		processXCTRVals(fs, &(data[idx]), xctr, 3, ncols);
+		fs << "\n";
 	}
+}
+
+void ECLabDriver::processCACPData(std::fstream& fs, epicsTimeStamp& chan_start_time, int nrows, int ncols, int technique_index, int process_index, 
+                     int loop, double start_time, double time_base, TDataBuffer_t* dbuffer, int xctr)
+{
+	unsigned* data = dbuffer->data;
+	double t;
+	int idx, ret;
+	float ewe, current;
+	int cycle;	
+	if (m_techniques[technique_index].name != "ca" && m_techniques[technique_index].name != "cp")
+	{
+		std::cerr << "CA/CP: not right technique" << std::endl;
+		return;
+	}		
+	int nxctr = countBits(xctr);
+	if ( ncols != (5 + nxctr) )
+	{
+		std::cerr << "CA/CP: incorrect number of columns in data: " << ncols << " expected: " << 5 + nxctr << std::endl;
+		return;
+	}
+	if (process_index != 0)
+	{
+		std::cerr << "CA/CP: incorrect process index" << std::endl;
+		return;
+	}
+	for(int i=0; i<nrows; ++i)
+	{
+		idx = i * ncols;
+		t = getTime(data[idx + 0], data[idx + 1], start_time, time_base);
+		ret = BL_ConvertNumericIntoSingle(data[idx + 2], &ewe);
+		ret = BL_ConvertNumericIntoSingle(data[idx + 3], &current);
+		cycle = data[idx + 4];
+		fs << getAbsTime(chan_start_time, t) << "," << t << "," << loop << "," << ewe << "," << current << "," << cycle;
+		processXCTRVals(fs, &(data[idx]), xctr, 5, ncols);
+		fs << "\n";
+	}
+}
+
+const char* ECLabDriver::techName(int tech)
+{
+	switch(tech)
+	{
+		case KBIO_TECHID_NONE:
+		    return "NONE";
+		case KBIO_TECHID_CA:
+		    return "CA";
+		case KBIO_TECHID_CP:
+		    return "CP";
+		case KBIO_TECHID_CALIMIT:
+		    return "CALIMIT";
+		case KBIO_TECHID_CPLIMIT:
+		    return "CPLIMIT";
+		case KBIO_TECHID_OCV:
+		    return "OCV";
+		case KBIO_TECHID_PEIS:
+		    return "PEIS";
+		default:
+			return "UNKNOWN";
+	}	
 }
 
 void ECLabDriver::ECLabDataTask() 
@@ -516,21 +818,22 @@ void ECLabDriver::ECLabDataTask()
 	TDataInfos_t dinfo;
 	TDataBuffer_t dbuffer;
 	int ndata;
+	std::vector<int> last_tech(100, -1);
+	std::vector<int> last_tech_index(100, -1);
 	std::fstream all_fs0[100], all_fs1[100];
 	unsigned file_index[100];
 	char filename[256];
 	char fileprefix[256];
 	char tbuff[64];
-	struct tm* pstm;
-	time_t now;
 	memset(file_index, 0, sizeof(file_index));
 	int savedata = 0;
+	bool dataDone = false;
 	while(true)
 	{
 	    ndata = 0;
-		getIntegerParam(P_saveData, &savedata);
 	    for(int i=0; i<m_infos.NumberOfChannels; ++i)
 		{
+			getIntegerParam(i, P_saveData, &savedata);
 			std::fstream& fs0 = all_fs0[i];
 			std::fstream& fs1 = all_fs1[i];
 			if (savedata == 0)
@@ -559,39 +862,88 @@ void ECLabDriver::ECLabDataTask()
 				catch(const std::exception& ex)
 				{
 					errlogSevPrintf(errlogInfo, "%s", ex.what());
+					continue;
 				}
 				lock();
 				updateCvals(i, cvals);
+				setIntegerParam(i, P_dataTechInd, dinfo.TechniqueIndex);
+				setIntegerParam(i, P_dataTechID, dinfo.TechniqueID);
+				setIntegerParam(i, P_dataLoop, dinfo.loop);
+				setDoubleParam(i, P_dataStartTime, dinfo.StartTime);
+				setIntegerParam(i, P_dataIRQSkipped, dinfo.IRQskipped);
                 callParamCallbacks();
 				unlock();
-				time(&now);
-				pstm = localtime(&now);
-				strftime(tbuff, sizeof(tbuff), "%Y%m%dT%H%M%S", pstm);
-				if (dinfo.TechniqueID == KBIO_TECHID_OCV)
+				int xctr = 0, P_xctr = -1;
+				if (m_techniques.size() > dinfo.TechniqueIndex)
 				{
-				    if ( cvals.State == KBIO_STATE_RUN && !(fs0.is_open()) )
+					std::string param_name = m_techniques[dinfo.TechniqueIndex].name;
+					std::transform(param_name.begin(), param_name.end(), param_name.begin(), ::toupper);
+					param_name += "_XCTR";
+					if (findParam(param_name.c_str(), &P_xctr) == asynSuccess && P_xctr != -1)
+					{
+						getIntegerParam(m_techniques[dinfo.TechniqueIndex].index, P_xctr, &xctr);
+					}
+				}
+				if ( fs0.is_open() && (last_tech[i] != dinfo.TechniqueID || last_tech_index[i] != dinfo.TechniqueIndex) )
+				{
+					fs0.close();
+					if (fs1.is_open())
+					{
+						fs1.close();
+					}
+					++(file_index[i]);
+				}
+				epicsTimeToStrftime(tbuff, sizeof(tbuff), "%Y%m%dT%H%M%S", &(m_start_time[i]));
+				if (dinfo.NbRows == 0)
+				{
+					;
+				}
+				else if (dinfo.TechniqueID == KBIO_TECHID_OCV)
+				{	
+				    if ( !(fs0.is_open()) )
 				    {
-					    getStringParam(P_filePrefix, sizeof(fileprefix), fileprefix);
-					    sprintf(filename, "%s_%s_%d_0.csv", fileprefix, tbuff, i);
+					    getStringParam(i, P_filePrefix, sizeof(fileprefix), fileprefix);
+					    sprintf(filename, "%s_%s_C%d_T%d_OCV_%d.csv", fileprefix, tbuff, i, dinfo.TechniqueIndex, file_index[i]);
 					    fs0.open(filename, std::ios::out);					
-						fs0 << "Time,Ewe\n";
+					    setStringParam(i, P_fileName, filename);
+						fs0 << "AbsTime,Time,Loop,Ewe";
+						processXCTRHeader(fs0, xctr);
+						fs0 << "\n";
 				    }
-					processOCVData(fs0, dinfo.NbRows, dinfo.NbCols, dinfo.TechniqueIndex, dinfo.ProcessIndex, 
-					        dinfo.loop, dinfo.StartTime, cvals.TimeBase, &dbuffer);
+					processOCVData(fs0, m_start_time[i], dinfo.NbRows, dinfo.NbCols, dinfo.TechniqueIndex, dinfo.ProcessIndex, 
+					        dinfo.loop, dinfo.StartTime, cvals.TimeBase, &dbuffer, xctr);
+				}
+				else if (dinfo.TechniqueID == KBIO_TECHID_CA || dinfo.TechniqueID == KBIO_TECHID_CP || 
+				         dinfo.TechniqueID == KBIO_TECHID_CALIMIT || dinfo.TechniqueID == KBIO_TECHID_CPLIMIT)
+				{
+					const char* prefix = techName(dinfo.TechniqueID);
+				    if ( !(fs0.is_open()) )
+				    {
+					    getStringParam(i, P_filePrefix, sizeof(fileprefix), fileprefix);
+					    sprintf(filename, "%s_%s_C%d_T%d_%s_%d.csv", fileprefix, tbuff, i, dinfo.TechniqueIndex, prefix, file_index[i]);
+					    setStringParam(i, P_fileName, filename);
+					    fs0.open(filename, std::ios::out);					
+						fs0 << "AbsTime,Time,Loop,Ewe,I,Cycle";
+						processXCTRHeader(fs0, xctr);
+						fs0 << "\n";
+				    }
+					processCACPData(fs0, m_start_time[i], dinfo.NbRows, dinfo.NbCols, dinfo.TechniqueIndex, dinfo.ProcessIndex, 
+					        dinfo.loop, dinfo.StartTime, cvals.TimeBase, &dbuffer, xctr);
 				}
 				else if (dinfo.TechniqueID == KBIO_TECHID_PEIS)
 				{
-				    if ( cvals.State == KBIO_STATE_RUN && !(fs0.is_open()) )
+				    if ( !(fs0.is_open()) )
 				    {
-					    getStringParam(P_filePrefix, sizeof(fileprefix), fileprefix);
-					    sprintf(filename, "%s_%s_%d_0.csv", fileprefix, tbuff, i);
+					    getStringParam(i, P_filePrefix, sizeof(fileprefix), fileprefix);
+					    sprintf(filename, "%s_%s_C%d_T%d_PEIS_%d_0.csv", fileprefix, tbuff, i, dinfo.TechniqueIndex, file_index[i]);
+					    setStringParam(i, P_fileName, filename);
 					    fs0.open(filename, std::ios::out);					
-						fs0 << "Time,Ewe,I\n";
-						sprintf(filename, "%s_%s_%d_1.csv", fileprefix, tbuff, i);
+						fs0 << "AbsTime,Time,Loop,Ewe,I\n";
+					    sprintf(filename, "%s_%s_C%d_T%d_PEIS_%d_1.csv", fileprefix, tbuff, i, dinfo.TechniqueIndex, file_index[i]);
 					    fs1.open(filename, std::ios::out);
-						fs1 << "Time,Freq,Mod Ewe,Mod I,Phase Zwe,Ewe,I,Mod Ece,Mod Ice,Phase Zce,Ece\n";
+						fs1 << "AbsTime,Time,Loop,Freq,Mod Ewe,Mod I,Phase Zwe,Ewe,I,Mod Ece,Mod Ice,Phase Zce,Ece\n";
 				    }
-					processPEISData(fs0, fs1, dinfo.NbRows, dinfo.NbCols, dinfo.TechniqueIndex, dinfo.ProcessIndex, 
+					processPEISData(fs0, fs1, m_start_time[i], dinfo.NbRows, dinfo.NbCols, dinfo.TechniqueIndex, dinfo.ProcessIndex, 
 					        dinfo.loop, dinfo.StartTime, cvals.TimeBase, &dbuffer);
 				}
 				lock();
@@ -615,6 +967,8 @@ void ECLabDriver::ECLabDataTask()
 				}
                 callParamCallbacks();
 				unlock();
+				last_tech[i] = dinfo.TechniqueID;
+				last_tech_index[i] = dinfo.TechniqueIndex;
 			}
 		}
 		if (ndata == 0)

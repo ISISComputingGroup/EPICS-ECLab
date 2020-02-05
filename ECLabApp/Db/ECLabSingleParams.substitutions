@@ -1,28 +1,33 @@
 # LABEL is parameter name in ECLab, PARAM is name withing ASYN/EPICS DB
 # eveery technique can have timebase
-pattern { P, Q, CHAN, PORT, TECH, INDEX, PARAM, LABEL, DESC, EGU }
-{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "OCV", 0, "RTT", "Rest_time_T", "Rest duration", "s"}
-{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "OCV", 0, "REDE", "Record_every_dE", "Record every dE", "V"}
-{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "OCV", 0, "REDT", "Record_every_dT", "Record every dT", "s"}
-{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "OCV", 0, "TB", "tb", "Time base", "s"}
-{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CA", 0, "REDT", "Record_every_dT", "Record every dT", "s"}
-{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CA", 0, "REDI", "Record_every_dI", "Record every dI", "A"}
-{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CA", 0, "TB", "tb", "Time base", "s"}
-{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "PEIS", 0, "IVSTEP", "Initial_Voltage_step", "Initial voltage step", "V"}
-{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "PEIS", 0, "FVSTEP", "Final_Voltage_step", "Final voltage step", "V"}
-{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "PEIS", 0, "DURSTEP", "Duration_step", "Step duration", "s"}
-{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "PEIS", 0, "REDT", "Record_every_dT", "Record every dt", "s"}
-{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "PEIS", 0, "REDI", "Record_every_dI", "Record every dI", "A"}
-{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "PEIS", 0, "FINFREQ", "Final_frequency", "Final frequency", "Hz"}
-{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "PEIS", 0, "INIFREQ", "Initial_frequency", "Initial frequency", "Hz"}
-{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "PEIS", 0, "AMPV", "Amplitude_Voltage", "Sinus amplitude", "V"}
-{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "PEIS", 0, "WFS", "Wait_for_steady", "Num period wait before each freq", ""}
-{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "PEIS", 0, "TB", "tb", "Time base", "s"}
-{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "OCV", 1, "RTT", "Rest_time_T", "Rest duration", "s"}
-{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "OCV", 1, "REDE", "Record_every_dE", "Record every dE", "V"}
-{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "OCV", 1, "REDT", "Record_every_dT", "Record every dT", "s"}
-{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CA", 1, "REDT", "Record_every_dT", "Record every dT", "s"}
-{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CA", 1, "REDI", "Record_every_dI", "Record every dI", "A"}
-
-
-
+pattern { P, Q, CHAN, PORT, TECH, INDEX, PARAM, LABEL, DESC, EGU, VAL }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "OCV", 0, "RTT", "Rest_time_T", "Rest duration", "s", "1"}
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "OCV", 0, "REDE", "Record_every_dE", "Record every dE", "V", ".01"}
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "OCV", 0, "REDT", "Record_every_dT", "Record every dT", "s", ".01"}
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "OCV", 0, "TB", "tb", "Time base", "s", "20e-6"}
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CA", 0, "REDT", "Record_every_dT", "Record every dT", "s", "1e-6"}
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CA", 0, "REDI", "Record_every_dI", "Record every dI", "A", "1e-3"}
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CA", 0, "TB", "tb", "Time base", "s", "25e-6"}
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CALIMIT", 0, "REDT", "Record_every_dT", "Record every dT", "s", "1e-6"}
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CALIMIT", 0, "REDI", "Record_every_dI", "Record every dI", "A", "1e-3"}
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CALIMIT", 0, "TB", "tb", "Time base", "s", "40e-6"}
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CP", 0, "REDT", "Record_every_dT", "Record every dT", "s", "50e-3"}
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CP", 0, "REDE", "Record_every_dE", "Record every dE", "V", "5e-3"}
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CP", 0, "TB", "tb", "Time base", "s", "25e-6"}
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CPLIMIT", 0, "REDT", "Record_every_dT", "Record every dT", "s", "50e-3"}
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CPLIMIT", 0, "REDE", "Record_every_dE", "Record every dE", "V", "5e-3"}
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CPLIMIT", 0, "TB", "tb", "Time base", "s", "40e-6"}
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "PEIS", 0, "IVSTEP", "Initial_Voltage_step", "Initial voltage step", "V", ""}
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "PEIS", 0, "FVSTEP", "Final_Voltage_step", "Final voltage step", "V", ""}
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "PEIS", 0, "DURSTEP", "Duration_step", "Step duration", "s", ""}
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "PEIS", 0, "REDT", "Record_every_dT", "Record every dt", "s", ""}
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "PEIS", 0, "REDI", "Record_every_dI", "Record every dI", "A", ""}
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "PEIS", 0, "FINFREQ", "Final_frequency", "Final frequency", "Hz", ""}
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "PEIS", 0, "INIFREQ", "Initial_frequency", "Initial frequency", "Hz", ""}
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "PEIS", 0, "AMPV", "Amplitude_Voltage", "Sinus amplitude", "V", ""}
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "PEIS", 0, "WFS", "Wait_for_steady", "Num period wait before each freq", "", ""}
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "PEIS", 0, "TB", "tb", "Time base", "s", ""}
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "OCV", 1, "RTT", "Rest_time_T", "Rest duration", "s", "1"}
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "OCV", 1, "REDE", "Record_every_dE", "Record every dE", "V", ".01"}
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "OCV", 1, "REDT", "Record_every_dT", "Record every dT", "s", ".01"}
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "OCV", 1, "TB", "tb", "Time base", "s", "20e-6"}

@@ -16,6 +16,7 @@ record(waveform, "$(P)$(Q):C$(CHAN):T:$(TECH):$(INDEX):$(PARAM)")
 	field(FTVL, "LONG")
 	field(EGU, "$(EGU)")
     field(SCAN, "I/O Intr")
+    info(archive, "VAL")
 }
 
 ## Set "$(DESC)" for technique $(TECH)
@@ -27,4 +28,7 @@ record(waveform, "$(P)$(Q):C$(CHAN):T:$(TECH):$(INDEX):$(PARAM):SP")
 	field(NELM, "$(NELM)")
 	field(FTVL, "LONG")
 	field(EGU, "$(EGU)")
+	field(PINI, "YES")
+    info(autosaveFields, "VAL")
+    info(archive, "VAL")
 }

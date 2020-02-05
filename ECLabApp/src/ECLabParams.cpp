@@ -22,12 +22,14 @@ struct technique_t
     bool update; 
 	ParamType type; 
 	std::string technique; 
-	std::string label; 
-	std::vector<TEccParam_t> value; 
+	std::string label; // parameter name
+	std::vector<TEccParam_t> value; // vector to handle array parameters
 	technique_t() : update(false) { }
+	technique_t(ParamType type_, const std::string& technique_, const std::string& label_) : update(false), type(type_), technique(technique_), label(label_) { }
+	technique_t(const technique_t& t) : update(t.update), type(t.type), technique(t.technique), label(t.label), value(t.value) { }
 };
 
-typedef std::map<int, std::vector<technique_t> > techniqueMap_t;
+typedef std::map<int, std::vector<technique_t> > techniqueMap_t; // maps asyn parameter id to technique parameters, vector to handle asyn address
 
 static techniqueMap_t g_map;
 
@@ -57,22 +59,19 @@ static void addTechParam(asynPortDriver* driver, techniqueMap_t& the_map, const 
 {
     int par_id = -1;
 	std::string asyn_param = technique + "_" + param;
-	if (driver->createParam(addr, asyn_param.c_str(), ECLabToASYNType(type), &par_id) != asynSuccess || par_id == -1)
+	if (addr != 0)
 	{
-		std::cerr << "Error Adding asyn parameter " << asyn_param << " addr " << addr << std::endl;
+		return;
+	}
+	// don't add explicilty to addr, par_id may vary betwween lists 
+	if (driver->createParam(asyn_param.c_str(), ECLabToASYNType(type), &par_id) != asynSuccess || par_id == -1)
+	{
+		std::cerr << "Error Adding asyn parameter " << asyn_param << std::endl;
 		return;
 	}
 	std::vector<technique_t>& ta = the_map[par_id];
-	if ( ta.size() < (addr + 1) )
-	{
-	    ta.resize(addr + 1);
-	}
-	technique_t& t = ta[addr];
-	t.update = false;
-	t.type = type;
-	t.technique = technique;
-	t.label = label;
-	std::cerr << "Adding asyn parameter \"" << asyn_param << "\" addr " << addr << " for technique \"" << technique << "\" label \"" << label << "\"" << std::endl;
+	ta.resize(4, technique_t(type, technique, label)); // 4 is max number of asyn addresses
+	std::cerr << "Adding asyn parameter \"" << asyn_param << "\" for technique \"" << technique << "\" label \"" << label << "\"" << std::endl;
 }
 
 void setECIntegerParam(asynPortDriver* driver, int addr, int id, epicsInt32 value)
@@ -108,6 +107,54 @@ void setECSingleParam(asynPortDriver* driver, int addr, int id, epicsFloat64 val
 	BL_DefineSglParameter(t.label.c_str(), static_cast<float>(value), 0, &(t.value[0]));
 }	
 
+void setECSingleArrayParam(asynPortDriver* driver, int addr, int id, epicsFloat32* value, int n)
+{
+	std::vector<technique_t>& ta = g_map[id];
+	technique_t& t = ta[addr];
+	t.update = true;
+	if (t.value.size() < n)
+	{
+	    t.value.resize(n);
+	}
+	for(int i=0; i<n; ++i)
+	{
+	    BL_DefineSglParameter(t.label.c_str(), value[i], i, &(t.value[i]));
+	}
+	driver->doCallbacksFloat32Array(value, n, id, addr);
+}	
+
+void setECIntegerArrayParam(asynPortDriver* driver, int addr, int id, epicsInt32* value, int n)
+{
+	std::vector<technique_t>& ta = g_map[id];
+	technique_t& t = ta[addr];
+	t.update = true;
+	if (t.value.size() < n)
+	{
+	    t.value.resize(n);
+	}
+	for(int i=0; i<n; ++i)
+	{
+	    BL_DefineIntParameter(t.label.c_str(), value[i], i, &(t.value[i]));
+	}
+	driver->doCallbacksInt32Array(value, n, id, addr);
+}	
+
+void setECBooleanArrayParam(asynPortDriver* driver, int addr, int id, epicsInt8* value, int n)
+{
+	std::vector<technique_t>& ta = g_map[id];
+	technique_t& t = ta[addr];
+	t.update = true;
+	if (t.value.size() < n)
+	{
+	    t.value.resize(n);
+	}
+	for(int i=0; i<n; ++i)
+	{
+	    BL_DefineBoolParameter(t.label.c_str(), value[i], i, &(t.value[i]));
+	}
+	driver->doCallbacksInt8Array(value, n, id, addr);
+}	
+
 void getTechniqueParams(const std::string& technique, int addr, std::vector<TEccParam_t>& values, bool changes_only)
 {
 	for(techniqueMap_t::iterator it = g_map.begin(); it != g_map.end(); ++it)
@@ -115,6 +162,7 @@ void getTechniqueParams(const std::string& technique, int addr, std::vector<TEcc
 	    std::vector<technique_t>& ta = it->second;
 		if ( addr >= ta.size() )
 		{
+			std::cerr << "technique addr array small" << std::endl;
 		    continue;
 		}
 	    technique_t& t = ta[addr];
@@ -130,18 +178,20 @@ void getTechniqueParams(const std::string& technique, int addr, std::vector<TEcc
 	}
 }
 
-void printParams(std::ostream& os)
+void printParams(asynPortDriver* driver, std::ostream& os)
 {
+	const char* paramName;
 	for(techniqueMap_t::iterator it = g_map.begin(); it != g_map.end(); ++it)
-	{	    
+	{
+		driver->getParamName(it->first, &paramName);
 	    std::vector<technique_t>& ta = it->second;
 		for(int j=0; j<ta.size(); ++j)
 		{
 	        technique_t& t = ta[j];
-		    os << "Technique " << t.technique << " addr " << j << " label " << t.label << std::endl;
+		    os << "Param name " << paramName << " Technique " << t.technique << " addr " << j << " label " << t.label << std::endl;
 		    for(int i=0; i<t.value.size(); ++i)
 		    {
-		        os << t.value[i].ParamStr << std::endl;
+		        os << "[" << t.value[i].ParamIndex << "] " << t.value[i].ParamStr << std::endl;
 		    }
 		}
 	}

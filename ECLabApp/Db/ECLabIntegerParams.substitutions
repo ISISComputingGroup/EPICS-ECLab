@@ -1,32 +1,47 @@
 # LABEL is parameter name in ECLab, PARAM is name withing ASYN/EPICS DB
 # every technique can have I_Range, E_Range and Bandwidth
-pattern { P, Q, CHAN, PORT, TECH, INDEX, PARAM, LABEL, DESC, EGU }
-
-{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CA", 0, "IRANGE", "I_Range", "I range", "" }
-{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CA", 0, "ERANGE", "E_Range", "Ewe range", "" }
-{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CA", 0, "BW", "Bandwidth", "Bandwidth", "" }
-{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "OCV", 0, "IRANGE", "I_Range", "I range", "" }
-{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "OCV", 0, "ERANGE", "E_Range", "Ewe range", "" }
-{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "OCV", 0, "BW", "Bandwidth", "Bandwidth", "" }
-{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "PEIS", 0, "IRANGE", "I_Range", "I range", "" }
-{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "PEIS", 0, "ERANGE", "E_Range", "Ewe range", "" }
-{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "PEIS", 0, "BW", "Bandwidth", "Bandwidth", "" }
-{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CA", 0, "NSTEPS", "Step_number", "Number of steps minus 1", "" }
-{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CA", 0, "NCYCLES", "N_Cycles", "Number of times repeated", "" }
-{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "LOOP", 0, "NLOOP", "loop_N_times", "Loop N times", "" }
-{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "LOOP", 0, "PROT", "protocol_number", "technique index to be linked", "" }
-{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "TO", 0, "LOGIC", "Trigger_Logic", "Trigger out level", "" }
-{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "TO", 0, "DUR", "Trigger_Duration", "Trigger out duration", "s" }
-{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "TI", 0, "LOGIC", "Trigger_Logic", "Trigger in level", "" }
-{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "TOS", 0, "LOGIC", "Trigger_Logic", "Trigger out value", "" }
-{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "PEIS", 0, "NSTEPS", "Step_number", "Number of voltage steps", "" }
-{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "PEIS", 0, "NFREQ", "Frequency_number", "Number of frequencies", "" }
-{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "PEIS", 0, "NAVRG", "Average_N_times", "Number of repeat times", "" }
-{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CA", 1, "NSTEPS", "Step_number", "Number of steps minus 1", "" }
-{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CA", 1, "NCYCLES", "N_Cycles", "Number of times repeated", "" }
-{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "LOOP", 1, "NLOOP", "loop_N_times", "Loop N times", "" }
-{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "LOOP", 1, "PROT", "protocol_number", "technique index to be linked", "" }
-{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "TO", 1, "LOGIC", "Trigger_Logic", "Trigger out level", "" }
-{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "TO", 1, "DUR", "Trigger_Duration", "Trigger out duration", "s" }
-{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "TI", 1, "LOGIC", "Trigger_Logic", "Trigger in level", "" }
-{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "TOS", 1, "LOGIC", "Trigger_Logic", "Trigger out value", "" }
+pattern { P, Q, CHAN, PORT, TECH, INDEX, PARAM, LABEL, DESC, EGU, VAL }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CA", 0, "IRANGE", "I_Range", "I range", "", "8" }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CA", 0, "ERANGE", "E_Range", "Ewe range", "", "3" }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CA", 0, "BW", "Bandwidth", "Bandwidth", "", "5" }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CA", 0, "STEPN", "Step_number", "Number of steps minus 1", "", "1" }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CA", 0, "NCYCLES", "N_Cycles", "Number of times repeated", "", "0" }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "OCV", 0, "IRANGE", "I_Range", "I range", "", "8" }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "OCV", 0, "ERANGE", "E_Range", "Ewe range", "", "3" }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "OCV", 0, "BW", "Bandwidth", "Bandwidth", "", "5" }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "PEIS", 0, "IRANGE", "I_Range", "I range", "", "" }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "PEIS", 0, "ERANGE", "E_Range", "Ewe range", "", "" }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "PEIS", 0, "BW", "Bandwidth", "Bandwidth", "", "" }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "PEIS", 0, "STEPN", "Step_number", "Number of voltage steps", "", "" }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "PEIS", 0, "NFREQ", "Frequency_number", "Number of frequencies", "", "" }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "PEIS", 0, "NAVRG", "Average_N_times", "Number of repeat times", "", "" }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "LOOP", 0, "NLOOP", "loop_N_times", "Loop N times", "", "" }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "LOOP", 0, "PROT", "protocol_number", "technique index to be linked", "", "" }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "TO", 0, "LOGIC", "Trigger_Logic", "Trigger out level", "", "" }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "TO", 0, "DUR", "Trigger_Duration", "Trigger out duration", "s", "" }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "TI", 0, "LOGIC", "Trigger_Logic", "Trigger in level", "", "" }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "TOS", 0, "LOGIC", "Trigger_Logic", "Trigger out value", "", "" }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CP", 0, "IRANGE", "I_Range", "I range", "", "8" }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CP", 0, "ERANGE", "E_Range", "Ewe range", "", "3" }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CP", 0, "BW", "Bandwidth", "Bandwidth", "", "5" }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CP", 0, "STEPN", "Step_number", "Number of steps minus 1", "", "1" }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CP", 0, "NCYCLES", "N_Cycles", "Number of times repeated", "", "0" }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "OCV", 1, "IRANGE", "I_Range", "I range", "", "8" }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "OCV", 1, "ERANGE", "E_Range", "Ewe range", "", "3" }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "OCV", 1, "BW", "Bandwidth", "Bandwidth", "", "5" }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "OCV", 0, "XCTR", "xctr", "XCTR", "", "0" }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CPLIMIT", 0, "IRANGE", "I_Range", "I range", "", "8" }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CPLIMIT", 0, "ERANGE", "E_Range", "Ewe range", "", "3" }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CPLIMIT", 0, "BW", "Bandwidth", "Bandwidth", "", "5" }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CPLIMIT", 0, "STEPN", "Step_number", "Number of steps minus 1", "", "1" }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CPLIMIT", 0, "NCYCLES", "N_Cycles", "Number of times repeated", "", "0" }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CALIMIT", 0, "IRANGE", "I_Range", "I range", "", "8" }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CALIMIT", 0, "ERANGE", "E_Range", "Ewe range", "", "3" }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CALIMIT", 0, "BW", "Bandwidth", "Bandwidth", "", "5" }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CALIMIT", 0, "STEPN", "Step_number", "Number of steps minus 1", "", "1" }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CALIMIT", 0, "NCYCLES", "N_Cycles", "Number of times repeated", "", "0" }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CA", 0, "XCTR", "xctr", "XCTR", "", "0" }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CP", 0, "XCTR", "xctr", "XCTR", "", "0" }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CALIMIT", 0, "XCTR", "xctr", "XCTR", "", "0" }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CPLIMIT", 0, "XCTR", "xctr", "XCTR", "", "0" }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "OCV", 1, "XCTR", "xctr", "XCTR", "", "0" }

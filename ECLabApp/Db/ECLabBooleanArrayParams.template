@@ -15,6 +15,7 @@ record(waveform, "$(P)$(Q):C$(CHAN):T:$(TECH):$(INDEX):$(PARAM)")
 	field(NELM, "$(NELM)")
 	field(FTVL, "UCHAR")
     field(SCAN, "I/O Intr")
+    info(archive, "VAL")
 }
 
 ## Set "$(DESC)" for technique $(TECH)
@@ -25,4 +26,7 @@ record(waveform, "$(P)$(Q):C$(CHAN):T:$(TECH):$(INDEX):$(PARAM):SP")
     field(INP, "@asyn($(PORT),$(INDEX),0)$(TECH)_$(PARAM)")
 	field(NELM, "$(NELM)")
 	field(FTVL, "UCHAR")
+	field(PINI, "YES")
+    info(autosaveFields, "VAL")
+    info(archive, "VAL")
 }
