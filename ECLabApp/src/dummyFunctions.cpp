@@ -15,6 +15,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <map>
 #include <time.h>
 
 #include <epicsStdio.h>
@@ -243,10 +244,12 @@ BIOLOGIC_API(int) BL_GetChannelsPluggedStub ( int ID, uint8* pChPlugged, uint8 S
 	{
 	    return -1;
 	}
-	for(int i=0; i<Size; ++i)
-	{
-	    pChPlugged[i] = 1;
-	}
+    memset(pChPlugged, 0, Size * sizeof(uint8));
+	pChPlugged[0] = 1;
+//	for(int i=0; i<Size; ++i)
+//	{
+//	    pChPlugged[i] = 1;
+//	}
     return 0; 
 }
 
@@ -354,6 +357,21 @@ static int castFloatToInt(float f)
 	return cf.i;
 }
 
+static std::map<std::string,int> g_tech_map;
+
+// when we move from VS2010 we can use an initialiser list for the above
+static int getTechId(const std::string& file)
+{
+    g_tech_map["cp4.ecc"] = KBIO_TECHID_CP;
+    g_tech_map["ca4.ecc"] = KBIO_TECHID_CA;
+    g_tech_map["cplimit4.ecc"] = KBIO_TECHID_CPLIMIT;
+    g_tech_map["calimit4.ecc"] = KBIO_TECHID_CALIMIT;
+    g_tech_map["peis4.ecc"] = KBIO_TECHID_PEIS;
+    g_tech_map["ocv4.ecc"] = KBIO_TECHID_OCV;
+    g_tech_map["loop4.ecc"] = KBIO_TECHID_LOOP;
+    return g_tech_map[file];
+}
+
 BIOLOGIC_API(int) BL_GetDataStub( int ID, uint8 channel, TDataBuffer_t* pBuf, TDataInfos_t* pInfos, TCurrentValues_t* pValues ) 
 { 
     DEBUG_PRINT("BL_GetData");
@@ -375,6 +393,7 @@ BIOLOGIC_API(int) BL_GetDataStub( int ID, uint8 channel, TDataBuffer_t* pBuf, TD
 	pInfos->TechniqueIndex = currentTechIndex;
 	pInfos->StartTime = 0;
 	size_t pos = my_tech.name.find_last_of("\\/");
+    std::string tech_file = my_tech.name.substr(pos+1);
 	if (pos == std::string::npos)
 	{
 		pos = 0;
@@ -391,11 +410,12 @@ BIOLOGIC_API(int) BL_GetDataStub( int ID, uint8 channel, TDataBuffer_t* pBuf, TD
 		pBuf->data[1] = (t & 0xffffffff);	// tlow
 		pBuf->data[2] = castFloatToInt(5);	// ewe	
 	}
-	else if (my_tech.name.substr(pos+1) == "cp4.ecc" || my_tech.name.substr(pos+1) == "ca4.ecc")
+	else if (tech_file == "cp4.ecc" || tech_file == "ca4.ecc" ||
+             tech_file == "cplimit4.ecc" || tech_file == "calimit4.ecc")
 	{
 		pInfos->NbRows = 1;
 		pInfos->NbCols = 5;
-		pInfos->TechniqueID = (my_tech.name.substr(pos+1) == "cp4.ecc" ? KBIO_TECHID_CP : KBIO_TECHID_CA);
+		pInfos->TechniqueID = g_tech_map[tech_file];
 		pInfos->ProcessIndex = 0;
 		__int64 t;
 		t = (time(NULL) - my_channels[channel].start - pInfos->StartTime) / pValues->TimeBase;
@@ -433,7 +453,7 @@ BIOLOGIC_API(int) BL_GetDataStub( int ID, uint8 channel, TDataBuffer_t* pBuf, TD
 	}
 	else
 	{
-		std::cerr << "No data for unknown technique" << std::endl;
+		std::cerr << "No data for unknown technique: " << tech_file << std::endl;
 	}
 	if (++currentTechIndex >= my_channels[channel].techniques.size())
 	{
@@ -476,3 +496,10 @@ BIOLOGIC_API(int) BL_SetHardConfStub( int ID, uint8 channel, THardwareConf_t Har
     return 0; 
 }
 
+BIOLOGIC_API(int) BL_FindEChemDevStub( char* data, uint32* siz, uint32* ndv )
+{
+    strncpy(data, "test", *siz);
+    *siz = strlen(data);
+    *ndv = 1;
+    return 0;    
+}

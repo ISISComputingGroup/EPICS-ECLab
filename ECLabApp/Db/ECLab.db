@@ -143,6 +143,7 @@ record(ai, "$(P)$(Q):C$(CHAN):EWE")
 	field(SCAN, "I/O Intr")
 	field(PREC, 3)
 	field(EGU, "V")
+	info(alarm, "$(IOCNAME=ECLAB_01)")
 #    info(archive, "VAL")
 }
 
