@@ -405,6 +405,20 @@ BIOLOGIC_API(int) BL_GetDataStub( int ID, uint8 channel, TDataBuffer_t* pBuf, TD
 		pBuf->data[3] = castFloatToInt(6);	// I	
 		pBuf->data[4] = 7;	// cycle	
 	}
+	else if (my_tech.name.substr(pos+1) == "cv4.ecc")
+	{
+		pInfos->NbRows = 1;
+		pInfos->NbCols = 5;
+		pInfos->TechniqueID = KBIO_TECHID_CV;
+		pInfos->ProcessIndex = 0;
+		__int64 t;
+		t = (time(NULL) - my_channels[channel].start - pInfos->StartTime) / pValues->TimeBase;
+		pBuf->data[0] = (t >> 32);	// thigh
+		pBuf->data[1] = (t & 0xffffffff);	// tlow
+		pBuf->data[2] = castFloatToInt(5);	// I
+		pBuf->data[3] = castFloatToInt(6);	// ewe
+		pBuf->data[4] = 7;	// cycle
+	}
 	else if (my_tech.name.substr(pos+1) == "peis4.ecc")
 	{
 		pInfos->TechniqueID = KBIO_TECHID_PEIS;
