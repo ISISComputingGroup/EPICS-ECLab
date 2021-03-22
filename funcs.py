@@ -61,6 +61,20 @@ g.set_pv("ECLAB_01:C0:T:CA:0:STEPN:SP", stepn, is_local=True)
 g.set_pv("ECLAB_01:C0:T:CA:0:NCYCLES:SP", 0, is_local=True)
 g.set_pv("ECLAB_01:C0:T:CA:0:XCTR:SP", 0, is_local=True) # 1 + 32 + 64
 
+# length number of steps
+
+g.set_pv("ECLAB_01:C0:T:CALIMIT:0:TB:SP", 34e-6, is_local=True)
+# default E (potential), +96 for I (current) 
+# default <= , +4 for >=
+# default OR between tests, +2 for AND
+# default not active, +1 for active 
+test1conf = [ ] 
+exitcond = [ ] # 0 = next step, 1=next technique, 2=stop experiment
+test1val = [ ]
+g.set_pv("ECLAB_01:C0:T:CALIMIT:0:TEST1CONF:SP", test1conf, is_local=True)
+g.set_pv("ECLAB_01:C0:T:CALIMIT:0:TEST1VAL:SP", test1val, is_local=True)
+g.set_pv("ECLAB_01:C0:T:CALIMIT:0:EXITCOND:SP", exitcond, is_local=True)
+
 #g.set_pv("ECLAB_01:C0:UPDATE:SP", 1, is_local=True)
 
 g.set_pv("ECLAB_01:C0:LOADTECH:SP", "ocv,ca,cp,ocv", is_local=True)
