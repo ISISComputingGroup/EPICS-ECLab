@@ -111,6 +111,8 @@ private:
 	void ECLabDataTask();
 	void processCACPData(std::fstream& fs, epicsTimeStamp& chan_start_time, int nrows, int ncols, int technique_index, int process_index, 
                      int loop, double start_time, double time_base, TDataBuffer_t* dbuffer, int xctr);
+	void processCVData(std::fstream& fs, epicsTimeStamp& chan_start_time, int nrows, int ncols, int technique_index, int process_index,
+                     int loop, double start_time, double time_base, TDataBuffer_t* dbuffer, int xctr);
 	void printIntParam(std::ostream& os, const char* desc, int param);
     void printDoubleParam(std::ostream& os, const char* desc, int param);
 	std::string getAbsTime(epicsTimeStamp& base, double offset);
