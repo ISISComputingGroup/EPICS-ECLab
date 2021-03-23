@@ -240,13 +240,9 @@ BIOLOGIC_API(int) BL_GetChannelsPluggedStub ( int ID, uint8* pChPlugged, uint8 S
 {
     DEBUG_PRINT("BL_GetChannelsPlugged");
 	CHECK_CONNECTION_ID(ID);
-	if (Size > NCHANNELS)
-	{
-	    return -1;
-	}
     memset(pChPlugged, 0, Size * sizeof(uint8));
 	pChPlugged[0] = 1;
-//	for(int i=0; i<Size; ++i)
+//	for(int i=0; i<Size && i < NCHANNELS; ++i)
 //	{
 //	    pChPlugged[i] = 1;
 //	}
