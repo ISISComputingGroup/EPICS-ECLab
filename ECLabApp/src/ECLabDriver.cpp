@@ -436,18 +436,18 @@ ECLabDriver::ECLabDriver(const char *portName, const char *ip, bool force_firmwa
 	std::cerr << "Connected to device code " << m_infos.DeviceCode << ", channels: " << m_infos.NumberOfChannels << ", slots: " << m_infos.NumberOfSlots << ", RAM: " << m_infos.RAMSize << " MBytes" << std::endl;
 	std::cerr << "Device firmware version: " << m_infos.FirmwareVersion << " (" << m_infos.FirmwareDate_yyyy << "/" << m_infos.FirmwareDate_mm << "/" << m_infos.FirmwareDate_dd << ")" << std::endl;
 
-    std::vector<uint8_t> chans(16,0);
+    std::vector<uint8_t> chans(m_infos.NumberOfChannels, 0);
     ECLabInterface::getChannelsPlugged(m_ID, chans);
-    int nchan = 0;
+    int nchan_plugged = 0;
     for(int i=0; i<chans.size(); ++i)
     {
         if (chans[i] != 0)
         {
             std::cerr << "Channel " << i << " is plugged" << std::endl;
-            ++nchan;
+            ++nchan_plugged;
         }
     }
-    if (nchan == 0)
+    if (nchan_plugged == 0)
     {
         std::cerr << "ERROR: No channels are plugged" << std::endl;
     }
