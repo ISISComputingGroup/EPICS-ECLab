@@ -22,6 +22,15 @@
 
 #include "ECLabInterface.h"
 
+static float rand0to1()
+{
+    return (float)rand() / (float)RAND_MAX;    
+}
+
+static float g_ewe = 0.0;
+static float g_ece = 0.0;
+static float g_current = 0.0;
+
 static int my_connection_id = 2382312;
 
 bool ECLabInterface::BLSIM = false;
@@ -327,14 +336,14 @@ BIOLOGIC_API(int) BL_GetCurrentValuesStub (int ID, uint8 channel, TCurrentValues
 	pValues->State = my_channels[channel].info.State;
 	pValues->MemFilled = 0;
 	pValues->TimeBase = 1e-6f;
-	pValues->Ewe = 0.0;
+	pValues->Ewe = g_ewe;
 	pValues->EweRangeMin = 0.0;
 	pValues->EweRangeMax = 0.0;
-	pValues->Ece = 2.0;
+	pValues->Ece = g_ece;
 	pValues->EceRangeMin = 0.0;
 	pValues->EceRangeMax = 0.0;
 	pValues->Eoverflow = 1;
-	pValues->I = 0.0;
+	pValues->I = g_current;
 	pValues->IRange = 0;
 	pValues->Ioverflow = 0;
 	pValues->ElapsedTime = time(NULL) - my_channels[channel].start;
@@ -377,6 +386,9 @@ BIOLOGIC_API(int) BL_GetDataStub( int ID, uint8 channel, TDataBuffer_t* pBuf, TD
     DEBUG_PRINT("BL_GetData");
 	CHECK_CONNECTION_ID(ID);
 	CHECK_CHANNEL(channel);
+    g_ewe = 1.0f + rand0to1();
+    g_ece = 2.0f + 2.0f * rand0to1();
+    g_current = 3.0f + 3.0f * rand0to1();
 	memset(pInfos, 0, sizeof(TDataInfos_t));
 	BL_GetCurrentValuesStub(ID, channel, pValues);
 	pInfos->NbRows = 0;
@@ -408,7 +420,7 @@ BIOLOGIC_API(int) BL_GetDataStub( int ID, uint8 channel, TDataBuffer_t* pBuf, TD
 		t = (time(NULL) - my_channels[channel].start - pInfos->StartTime) / pValues->TimeBase;
 		pBuf->data[0] = (t >> 32);	// thigh
 		pBuf->data[1] = (t & 0xffffffff);	// tlow
-		pBuf->data[2] = castFloatToInt(5);	// ewe	
+		pBuf->data[2] = castFloatToInt(g_ewe);	// ewe	
 	}
 	else if (tech_file == "cp4.ecc" || tech_file == "ca4.ecc" ||
              tech_file == "cplimit4.ecc" || tech_file == "calimit4.ecc")
@@ -421,9 +433,23 @@ BIOLOGIC_API(int) BL_GetDataStub( int ID, uint8 channel, TDataBuffer_t* pBuf, TD
 		t = (time(NULL) - my_channels[channel].start - pInfos->StartTime) / pValues->TimeBase;
 		pBuf->data[0] = (t >> 32);	// thigh
 		pBuf->data[1] = (t & 0xffffffff);	// tlow
-		pBuf->data[2] = castFloatToInt(5);	// ewe	
-		pBuf->data[3] = castFloatToInt(6);	// I	
+		pBuf->data[2] = castFloatToInt(g_ewe);	// ewe	
+		pBuf->data[3] = castFloatToInt(g_current);	// I	
 		pBuf->data[4] = 7;	// cycle	
+	}
+	else if (my_tech.name.substr(pos+1) == "cv4.ecc")
+	{
+		pInfos->NbRows = 1;
+		pInfos->NbCols = 5;
+		pInfos->TechniqueID = KBIO_TECHID_CV;
+		pInfos->ProcessIndex = 0;
+		__int64 t;
+		t = (time(NULL) - my_channels[channel].start - pInfos->StartTime) / pValues->TimeBase;
+		pBuf->data[0] = (t >> 32);	// thigh
+		pBuf->data[1] = (t & 0xffffffff);	// tlow
+		pBuf->data[2] = castFloatToInt(g_current);	// I
+		pBuf->data[3] = castFloatToInt(g_ewe);	// ewe
+		pBuf->data[4] = 7;	// cycle
 	}
 	else if (my_tech.name.substr(pos+1) == "peis4.ecc")
 	{
@@ -437,8 +463,8 @@ BIOLOGIC_API(int) BL_GetDataStub( int ID, uint8 channel, TDataBuffer_t* pBuf, TD
 			t = (time(NULL) - my_channels[channel].start - pInfos->StartTime) / pValues->TimeBase;
 			pBuf->data[0] = (t >> 32);	// thigh
 			pBuf->data[1] = (t & 0xffffffff);	// tlow
-			pBuf->data[2] = castFloatToInt(5);	// ewe	
-			pBuf->data[3] = castFloatToInt(5);	// I	
+			pBuf->data[2] = castFloatToInt(g_ewe);	// ewe	
+			pBuf->data[3] = castFloatToInt(g_current);	// I	
 		}
 		else
 		{

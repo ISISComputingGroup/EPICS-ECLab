@@ -14,3 +14,5 @@ pattern { P, Q, CHAN, PORT, TECH, INDEX, PARAM, LABEL, DESC, EGU, NELM }
 { "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CPLIMIT", 0, "TEST1VAL", "Test1_Value", "Value of Test1 by step", "", 20 }
 { "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CPLIMIT", 0, "TEST2VAL", "Test2_Value", "Value of Test2 by step", "", 20 }
 { "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CPLIMIT", 0, "TEST3VAL", "Test3_Value", "Value of Test3 by step", "", 20 }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CV", 0, "VSTEP", "Voltage_step", "Voltage step", "V", 5 }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CV", 0, "SCANRATE", "Scan_Rate", "slew rate array", "mV/s", 5 }

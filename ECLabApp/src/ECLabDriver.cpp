@@ -822,6 +822,43 @@ void ECLabDriver::processCACPData(std::fstream& fs, epicsTimeStamp& chan_start_t
 	}
 }
 
+void ECLabDriver::processCVData(std::fstream& fs, epicsTimeStamp& chan_start_time, int nrows, int ncols, int technique_index, int process_index,
+                     int loop, double start_time, double time_base, TDataBuffer_t* dbuffer, int xctr)
+{
+	unsigned* data = dbuffer->data;
+	double t;
+	int idx, ret;
+	float ewe, current;
+	int cycle;
+	if (m_techniques[technique_index].name != "cv")
+	{
+		std::cerr << "CV: not right technique" << std::endl;
+		return;
+	}
+	int nxctr = countBits(xctr);
+	if ( ncols != (5 + nxctr) )
+	{
+		std::cerr << "CV: incorrect number of columns in data: " << ncols << " expected: " << 5 + nxctr << std::endl;
+		return;
+	}
+	if (process_index != 0)
+	{
+		std::cerr << "CV: incorrect process index" << std::endl;
+		return;
+	}
+	for(int i=0; i<nrows; ++i)
+	{
+		idx = i * ncols;
+		t = getTime(data[idx + 0], data[idx + 1], start_time, time_base);
+		ret = BL_ConvertNumericIntoSingle(data[idx + 2], &current);
+		ret = BL_ConvertNumericIntoSingle(data[idx + 3], &ewe);
+		cycle = data[idx + 4];
+		fs << getAbsTime(chan_start_time, t) << "," << t << "," << loop << "," << current << "," << ewe << "," << cycle;
+		processXCTRVals(fs, &(data[idx]), xctr, 5, ncols);
+		fs << "\n";
+	}
+}
+
 const char* ECLabDriver::techName(int tech)
 {
 	switch(tech)
@@ -832,6 +869,8 @@ const char* ECLabDriver::techName(int tech)
 		    return "CA";
 		case KBIO_TECHID_CP:
 		    return "CP";
+		case KBIO_TECHID_CV:
+		    return "CV";
 		case KBIO_TECHID_CALIMIT:
 		    return "CALIMIT";
 		case KBIO_TECHID_CPLIMIT:
@@ -961,6 +1000,22 @@ void ECLabDriver::ECLabDataTask()
 						fs0 << "\n";
 				    }
 					processCACPData(fs0, m_start_time[i], dinfo.NbRows, dinfo.NbCols, dinfo.TechniqueIndex, dinfo.ProcessIndex, 
+					        dinfo.loop, dinfo.StartTime, cvals.TimeBase, &dbuffer, xctr);
+				}
+				else if (dinfo.TechniqueID == KBIO_TECHID_CV)
+				{
+					const char* prefix = techName(dinfo.TechniqueID);
+				    if ( !(fs0.is_open()) )
+				    {
+					    getStringParam(i, P_filePrefix, sizeof(fileprefix), fileprefix);
+					    sprintf(filename, "%s_%s_C%d_T%d_%s_%d.csv", fileprefix, tbuff, i, dinfo.TechniqueIndex, prefix, file_index[i]);
+					    setStringParam(i, P_fileName, filename);
+					    fs0.open(filename, std::ios::out);
+						fs0 << "AbsTime,Time,Loop,I,Ewe,Cycle";
+						processXCTRHeader(fs0, xctr);
+						fs0 << "\n";
+				    }
+					processCVData(fs0, m_start_time[i], dinfo.NbRows, dinfo.NbCols, dinfo.TechniqueIndex, dinfo.ProcessIndex,
 					        dinfo.loop, dinfo.StartTime, cvals.TimeBase, &dbuffer, xctr);
 				}
 				else if (dinfo.TechniqueID == KBIO_TECHID_PEIS)
