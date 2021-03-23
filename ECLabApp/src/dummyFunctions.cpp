@@ -369,6 +369,7 @@ static int getTechId(const std::string& file)
 {
     g_tech_map["cp4.ecc"] = KBIO_TECHID_CP;
     g_tech_map["ca4.ecc"] = KBIO_TECHID_CA;
+    g_tech_map["cv4.ecc"] = KBIO_TECHID_CV;
     g_tech_map["cplimit4.ecc"] = KBIO_TECHID_CPLIMIT;
     g_tech_map["calimit4.ecc"] = KBIO_TECHID_CALIMIT;
     g_tech_map["peis4.ecc"] = KBIO_TECHID_PEIS;
@@ -401,16 +402,12 @@ BIOLOGIC_API(int) BL_GetDataStub( int ID, uint8 channel, TDataBuffer_t* pBuf, TD
 	pInfos->TechniqueIndex = currentTechIndex;
 	pInfos->StartTime = 0;
 	size_t pos = my_tech.name.find_last_of("\\/");
-    std::string tech_file = my_tech.name.substr(pos+1);
-	if (pos == std::string::npos)
-	{
-		pos = 0;
-	}
-	if (my_tech.name.substr(pos+1) == "ocv4.ecc")
+    std::string tech_file = (pos != std::string::npos ? my_tech.name.substr(pos+1) : my_tech.name);
+	if (tech_file == "ocv4.ecc")
 	{
 		pInfos->NbRows = 1;
 		pInfos->NbCols = 3;
-		pInfos->TechniqueID = KBIO_TECHID_OCV;
+		pInfos->TechniqueID = g_tech_map[tech_file];
 		pInfos->ProcessIndex = 0;
 		__int64 t;
 		t = (time(NULL) - my_channels[channel].start - pInfos->StartTime) / pValues->TimeBase;
@@ -433,11 +430,11 @@ BIOLOGIC_API(int) BL_GetDataStub( int ID, uint8 channel, TDataBuffer_t* pBuf, TD
 		pBuf->data[3] = castFloatToInt(g_current);	// I	
 		pBuf->data[4] = 7;	// cycle	
 	}
-	else if (my_tech.name.substr(pos+1) == "cv4.ecc")
+	else if (tech_file == "cv4.ecc")
 	{
 		pInfos->NbRows = 1;
 		pInfos->NbCols = 5;
-		pInfos->TechniqueID = KBIO_TECHID_CV;
+		pInfos->TechniqueID = g_tech_map[tech_file];
 		pInfos->ProcessIndex = 0;
 		__int64 t;
 		t = (time(NULL) - my_channels[channel].start - pInfos->StartTime) / pValues->TimeBase;
@@ -447,9 +444,9 @@ BIOLOGIC_API(int) BL_GetDataStub( int ID, uint8 channel, TDataBuffer_t* pBuf, TD
 		pBuf->data[3] = castFloatToInt(g_ewe);	// ewe
 		pBuf->data[4] = 7;	// cycle
 	}
-	else if (my_tech.name.substr(pos+1) == "peis4.ecc")
+	else if (tech_file == "peis4.ecc")
 	{
-		pInfos->TechniqueID = KBIO_TECHID_PEIS;
+		pInfos->TechniqueID = g_tech_map[tech_file];
 		pInfos->NbRows = 1;
 		if (time(NULL) % 2 == 0)
 		{
@@ -469,9 +466,9 @@ BIOLOGIC_API(int) BL_GetDataStub( int ID, uint8 channel, TDataBuffer_t* pBuf, TD
 			pBuf->data[13] = castFloatToInt(10);	// time					
 		}
 	}
-	else if (my_tech.name.substr(pos+1) == "loop4.ecc")
+	else if (tech_file == "loop4.ecc")
 	{
-		pInfos->TechniqueID = KBIO_TECHID_LOOP;
+		pInfos->TechniqueID = g_tech_map[tech_file];
 	}
 	else
 	{
