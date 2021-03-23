@@ -27,6 +27,10 @@ pattern { P, Q, CHAN, PORT, TECH, INDEX, PARAM, LABEL, DESC, EGU, VAL }
 { "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "PEIS", 0, "AMPV", "Amplitude_Voltage", "Sinus amplitude", "V", ""}
 { "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "PEIS", 0, "WFS", "Wait_for_steady", "Num period wait before each freq", "", ""}
 { "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "PEIS", 0, "TB", "tb", "Time base", "s", ""}
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CV", 0, "TB", "tb", "Time base", "s", "45e-6"}
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CV", 0, "REDE", "Record_every_dE", "recording on dE", "V", ".01"}
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CV", 0, "BMI", "Begin_measuring_I", "Begin step accumulation", "", "0"}
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CV", 0, "EMI", "End_measuring_I", "End step accumulation", "", "0"}
 { "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "OCV", 1, "RTT", "Rest_time_T", "Rest duration", "s", "1"}
 { "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "OCV", 1, "REDE", "Record_every_dE", "Record every dE", "V", ".01"}
 { "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "OCV", 1, "REDT", "Record_every_dT", "Record every dT", "s", ".01"}

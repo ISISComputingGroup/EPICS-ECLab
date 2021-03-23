@@ -10,7 +10,7 @@ O.*/
 *.tags
 envPaths
 cdCommands
-dllPath.bat
+dllPath*.bat
 runIOC.bat
 runIOC.sh
 relPaths.sh
@@ -18,3 +18,4 @@ relPaths.sh
 *_info_settings.req
 .project
 *.py[co]
+NULL

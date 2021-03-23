@@ -17,7 +17,7 @@
 class ECLabDriver : public asynPortDriver 
 {
 public:
-	ECLabDriver(const char *portName, const char *ip);
+	ECLabDriver(const char *portName, const char *ip, bool force_firmware_reload);
 	
 	// These are the methods that we override from asynPortDriver
 	virtual asynStatus writeInt32(asynUser *pasynUser, epicsInt32 value);
@@ -110,6 +110,8 @@ private:
 	static void ECLabDataTaskC(void* arg);
 	void ECLabDataTask();
 	void processCACPData(std::fstream& fs, epicsTimeStamp& chan_start_time, int nrows, int ncols, int technique_index, int process_index, 
+                     int loop, double start_time, double time_base, TDataBuffer_t* dbuffer, int xctr);
+	void processCVData(std::fstream& fs, epicsTimeStamp& chan_start_time, int nrows, int ncols, int technique_index, int process_index,
                      int loop, double start_time, double time_base, TDataBuffer_t* dbuffer, int xctr);
 	void printIntParam(std::ostream& os, const char* desc, int param);
     void printDoubleParam(std::ostream& os, const char* desc, int param);

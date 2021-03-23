@@ -340,7 +340,7 @@ void ECLabDriver::report(FILE* fp, int details)
 /// Calls constructor for the asynPortDriver base class and sets up driver parameters.
 ///
 /// \param[in] portName @copydoc initArg0
-ECLabDriver::ECLabDriver(const char *portName, const char *ip) 
+ECLabDriver::ECLabDriver(const char *portName, const char *ip, bool force_firmware_reload) 
 	: asynPortDriver(portName, 
 	16, /* maxAddr */ 
 	NUM_ECLAB_PARAMS + 100,
@@ -456,8 +456,11 @@ ECLabDriver::ECLabDriver(const char *portName, const char *ip)
 	std::string xlx_file = ecc_dir + "Vmp_iv_0395_aa.xlx";
 	std::replace(xlx_file.begin(), xlx_file.end(), '/', '\\');
     std::vector<int> res(chans.size(),0);
-    int ForceFirmwareReload = 0;
-	ECLabInterface::LoadFirmware(m_ID, &(chans[0]), &(res[0]), chans.size(), 0, ForceFirmwareReload, kernel_file.c_str(), xlx_file.c_str());
+    if (force_firmware_reload)
+    {
+		std::cerr << "Forcing firmware reload" << std::endl;
+    }
+	ECLabInterface::LoadFirmware(m_ID, &(chans[0]), &(res[0]), chans.size(), 0, (force_firmware_reload ? 1 : 0), kernel_file.c_str(), xlx_file.c_str());
     for(int i=0; i<res.size(); ++i)
     {
         if (res[i] < 0)
@@ -822,6 +825,43 @@ void ECLabDriver::processCACPData(std::fstream& fs, epicsTimeStamp& chan_start_t
 	}
 }
 
+void ECLabDriver::processCVData(std::fstream& fs, epicsTimeStamp& chan_start_time, int nrows, int ncols, int technique_index, int process_index,
+                     int loop, double start_time, double time_base, TDataBuffer_t* dbuffer, int xctr)
+{
+	unsigned* data = dbuffer->data;
+	double t;
+	int idx, ret;
+	float ewe, current;
+	int cycle;
+	if (m_techniques[technique_index].name != "cv")
+	{
+		std::cerr << "CV: not right technique" << std::endl;
+		return;
+	}
+	int nxctr = countBits(xctr);
+	if ( ncols != (5 + nxctr) )
+	{
+		std::cerr << "CV: incorrect number of columns in data: " << ncols << " expected: " << 5 + nxctr << std::endl;
+		return;
+	}
+	if (process_index != 0)
+	{
+		std::cerr << "CV: incorrect process index" << std::endl;
+		return;
+	}
+	for(int i=0; i<nrows; ++i)
+	{
+		idx = i * ncols;
+		t = getTime(data[idx + 0], data[idx + 1], start_time, time_base);
+		ret = BL_ConvertNumericIntoSingle(data[idx + 2], &current);
+		ret = BL_ConvertNumericIntoSingle(data[idx + 3], &ewe);
+		cycle = data[idx + 4];
+		fs << getAbsTime(chan_start_time, t) << "," << t << "," << loop << "," << current << "," << ewe << "," << cycle;
+		processXCTRVals(fs, &(data[idx]), xctr, 5, ncols);
+		fs << "\n";
+	}
+}
+
 const char* ECLabDriver::techName(int tech)
 {
 	switch(tech)
@@ -832,6 +872,8 @@ const char* ECLabDriver::techName(int tech)
 		    return "CA";
 		case KBIO_TECHID_CP:
 		    return "CP";
+		case KBIO_TECHID_CV:
+		    return "CV";
 		case KBIO_TECHID_CALIMIT:
 		    return "CALIMIT";
 		case KBIO_TECHID_CPLIMIT:
@@ -963,6 +1005,22 @@ void ECLabDriver::ECLabDataTask()
 					processCACPData(fs0, m_start_time[i], dinfo.NbRows, dinfo.NbCols, dinfo.TechniqueIndex, dinfo.ProcessIndex, 
 					        dinfo.loop, dinfo.StartTime, cvals.TimeBase, &dbuffer, xctr);
 				}
+				else if (dinfo.TechniqueID == KBIO_TECHID_CV)
+				{
+					const char* prefix = techName(dinfo.TechniqueID);
+				    if ( !(fs0.is_open()) )
+				    {
+					    getStringParam(i, P_filePrefix, sizeof(fileprefix), fileprefix);
+					    sprintf(filename, "%s_%s_C%d_T%d_%s_%d.csv", fileprefix, tbuff, i, dinfo.TechniqueIndex, prefix, file_index[i]);
+					    setStringParam(i, P_fileName, filename);
+					    fs0.open(filename, std::ios::out);
+						fs0 << "AbsTime,Time,Loop,I,Ewe,Cycle";
+						processXCTRHeader(fs0, xctr);
+						fs0 << "\n";
+				    }
+					processCVData(fs0, m_start_time[i], dinfo.NbRows, dinfo.NbCols, dinfo.TechniqueIndex, dinfo.ProcessIndex,
+					        dinfo.loop, dinfo.StartTime, cvals.TimeBase, &dbuffer, xctr);
+				}
 				else if (dinfo.TechniqueID == KBIO_TECHID_PEIS)
 				{
 				    if ( !(fs0.is_open()) )
@@ -1020,11 +1078,11 @@ extern "C" {
 	/// The function is registered via EClabRegister().
 	///
 	/// @param[in] portName @copydoc initArg0
-	int ECLabConfigure(const char *portName, const char *ip)
+	int ECLabConfigure(const char *portName, const char *ip, bool force_firmware_reload)
 	{
 		try
 		{
-			new ECLabDriver(portName, ip);
+			new ECLabDriver(portName, ip, force_firmware_reload);
 			return(asynSuccess);
 		}
 		catch(const std::exception& ex)
@@ -1043,13 +1101,14 @@ extern "C" {
 
 	static const iocshArg initArg0 = { "portName", iocshArgString};			///< A name for the asyn driver instance we will create - used to refer to it from EPICS DB files
 	static const iocshArg initArg1 = { "ip", iocshArgString};			///< IP address used
-	static const iocshArg * const initArgs[] = { &initArg0, &initArg1 };
+	static const iocshArg initArg2 = { "force_firmware_reload", iocshArgInt};			///< force firmware reload
+	static const iocshArg * const initArgs[] = { &initArg0, &initArg1, &initArg2 };
 
 	static const iocshFuncDef initFuncDef = {"ECLabConfigure", sizeof(initArgs) / sizeof(iocshArg*), initArgs};
 
 	static void initCallFunc(const iocshArgBuf *args)
 	{
-		ECLabConfigure(args[0].sval, args[1].sval);
+		ECLabConfigure(args[0].sval, args[1].sval, (args[2].ival != 0));
 	}
 	
 	/// Register new commands with EPICS IOC shell

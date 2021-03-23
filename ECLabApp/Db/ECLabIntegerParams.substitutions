@@ -45,3 +45,5 @@ pattern { P, Q, CHAN, PORT, TECH, INDEX, PARAM, LABEL, DESC, EGU, VAL }
 { "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CALIMIT", 0, "XCTR", "xctr", "XCTR", "", "0" }
 { "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CPLIMIT", 0, "XCTR", "xctr", "XCTR", "", "0" }
 { "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "OCV", 1, "XCTR", "xctr", "XCTR", "", "0" }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CV", 0, "NCYCLES", "N_Cycles", "Number of cycle", "", "0" }
+{ "\$(P)", "\$(Q)", "\$(CHAN)", "\$(PORT)", "CV", 0, "SNUM", "Scan_number", "Scan number", "", "2" }
