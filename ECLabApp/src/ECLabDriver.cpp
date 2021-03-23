@@ -340,7 +340,7 @@ void ECLabDriver::report(FILE* fp, int details)
 /// Calls constructor for the asynPortDriver base class and sets up driver parameters.
 ///
 /// \param[in] portName @copydoc initArg0
-ECLabDriver::ECLabDriver(const char *portName, const char *ip) 
+ECLabDriver::ECLabDriver(const char *portName, const char *ip, bool force_firmware_reload) 
 	: asynPortDriver(portName, 
 	16, /* maxAddr */ 
 	NUM_ECLAB_PARAMS + 100,
@@ -437,7 +437,11 @@ ECLabDriver::ECLabDriver(const char *portName, const char *ip)
 	std::replace(kernel_file.begin(), kernel_file.end(), '/', '\\');
 	std::string xlx_file = ecc_dir + "Vmp_iv_0395_aa.xlx";
 	std::replace(xlx_file.begin(), xlx_file.end(), '/', '\\');
-	ECLabInterface::LoadFirmware(m_ID, chans, res, 1, 0, 0, kernel_file.c_str(), xlx_file.c_str());
+    if (force_firmware_reload)
+    {
+		std::cerr << "Forcing firmware reload" << std::endl;
+    }
+	ECLabInterface::LoadFirmware(m_ID, chans, res, 1, 0, (force_firmware_reload ? 1 : 0), kernel_file.c_str(), xlx_file.c_str());
 	if (res[0] < 0)
 	{
 		std::cerr << "Error loading firmware on channel 0: " << res[0] << std::endl;
@@ -1042,11 +1046,11 @@ extern "C" {
 	/// The function is registered via EClabRegister().
 	///
 	/// @param[in] portName @copydoc initArg0
-	int ECLabConfigure(const char *portName, const char *ip)
+	int ECLabConfigure(const char *portName, const char *ip, bool force_firmware_reload)
 	{
 		try
 		{
-			new ECLabDriver(portName, ip);
+			new ECLabDriver(portName, ip, force_firmware_reload);
 			return(asynSuccess);
 		}
 		catch(const std::exception& ex)
@@ -1060,13 +1064,14 @@ extern "C" {
 
 	static const iocshArg initArg0 = { "portName", iocshArgString};			///< A name for the asyn driver instance we will create - used to refer to it from EPICS DB files
 	static const iocshArg initArg1 = { "ip", iocshArgString};			///< IP address used
-	static const iocshArg * const initArgs[] = { &initArg0, &initArg1 };
+	static const iocshArg initArg2 = { "force_firmware_reload", iocshArgInt};			///< force firmware reload
+	static const iocshArg * const initArgs[] = { &initArg0, &initArg1, &initArg2 };
 
 	static const iocshFuncDef initFuncDef = {"ECLabConfigure", sizeof(initArgs) / sizeof(iocshArg*), initArgs};
 
 	static void initCallFunc(const iocshArgBuf *args)
 	{
-		ECLabConfigure(args[0].sval, args[1].sval);
+		ECLabConfigure(args[0].sval, args[1].sval, (args[2].ival != 0));
 	}
 	
 	/// Register new commands with EPICS IOC shell

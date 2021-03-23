@@ -17,7 +17,7 @@
 class ECLabDriver : public asynPortDriver 
 {
 public:
-	ECLabDriver(const char *portName, const char *ip);
+	ECLabDriver(const char *portName, const char *ip, bool force_firmware_reload);
 	
 	// These are the methods that we override from asynPortDriver
 	virtual asynStatus writeInt32(asynUser *pasynUser, epicsInt32 value);
