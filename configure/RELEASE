@@ -4,6 +4,10 @@ ONCRPC=$(SUPPORT)/oncrpc/master
 ## path to top of our build area, we copy ecc files
 ## to $(ECLAB)/ecc and $(ECLAB) is used within the program 
 ECLAB=$(SUPPORT)/ECLab/master
+## test ioc doesn't do anything with autosave yet
+#AUTOSAVE=$(SUPPORT)/autosave/master
+## DEVIOCSTATS is optional, the OPI graph uses the HEARTBEAT PV from it for graphs
+DEVIOCSTATS=$(SUPPORT)/devIocStats/master
 
 # optional extra local definitions here
 -include $(TOP)/configure/RELEASE.private

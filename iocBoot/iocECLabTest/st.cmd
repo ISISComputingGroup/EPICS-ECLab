@@ -15,19 +15,24 @@ dbLoadDatabase "dbd/ECLabTest.dbd"
 ECLabTest_registerRecordDeviceDriver pdbbase
 
 
-#ECLabConfigure("chan0", 130.246.36.213)
+#ECLabConfigure("chan0", "130.246.36.213")
 # pass "SIM" as ip address for simulation mode
 ECLabConfigure("chan0", "SIM")
 
 ## Load our record instances
-dbLoadRecords("db/ECLab.db","P=$(MYPVPREFIX),Q=ECLAB,PORT=chan0,CHAN=0")
-dbLoadRecords("db/ECLabIntegerParams.db","P=$(MYPVPREFIX),Q=ECLAB,PORT=chan0,CHAN=0")
-dbLoadRecords("db/ECLabBooleanParams.db","P=$(MYPVPREFIX),Q=ECLAB,PORT=chan0,CHAN=0")
-dbLoadRecords("db/ECLabSingleParams.db","P=$(MYPVPREFIX),Q=ECLAB,PORT=chan0,CHAN=0")
-dbLoadRecords("db/ECLabIntegerArrayParams.db","P=$(MYPVPREFIX),Q=ECLAB,PORT=chan0,CHAN=0")
-dbLoadRecords("db/ECLabBooleanArrayParams.db","P=$(MYPVPREFIX),Q=ECLAB,PORT=chan0,CHAN=0")
-dbLoadRecords("db/ECLabSingleArrayParams.db","P=$(MYPVPREFIX),Q=ECLAB,PORT=chan0,CHAN=0")
+dbLoadRecords("db/ECLab.db","P=$(MYPVPREFIX),Q=ECLAB_01,PORT=chan0,CHAN=0")
+dbLoadRecords("db/ECLabIntegerParams.db","P=$(MYPVPREFIX),Q=ECLAB_01,PORT=chan0,CHAN=0")
+dbLoadRecords("db/ECLabBooleanParams.db","P=$(MYPVPREFIX),Q=ECLAB_01,PORT=chan0,CHAN=0")
+dbLoadRecords("db/ECLabSingleParams.db","P=$(MYPVPREFIX),Q=ECLAB_01,PORT=chan0,CHAN=0")
+dbLoadRecords("db/ECLabIntegerArrayParams.db","P=$(MYPVPREFIX),Q=ECLAB_01,PORT=chan0,CHAN=0")
+dbLoadRecords("db/ECLabBooleanArrayParams.db","P=$(MYPVPREFIX),Q=ECLAB_01,PORT=chan0,CHAN=0")
+dbLoadRecords("db/ECLabSingleArrayParams.db","P=$(MYPVPREFIX),Q=ECLAB_01,PORT=chan0,CHAN=0")
+
+## the HEARTBEAT PV from deviocstats is used for the OPI, otherwise it is optional
+dbLoadRecords("$(DEVIOCSTATS)/db/iocAdminSoft.db","IOC=$(MYPVPREFIX)CS:IOC:ECLAB_01:DEVIOS")
 
 cd ${TOP}/iocBoot/${IOC}
 iocInit
+
+
 
