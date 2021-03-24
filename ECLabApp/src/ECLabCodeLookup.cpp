@@ -11,7 +11,7 @@ static const char* enumLookup(int val, EnumPair* enumPairs, int n)
 {
    for(int i=0; i<n; ++i)
    {
-        if (enumPairs[i].val == i)
+        if (enumPairs[i].val == val)
 	    {
            return enumPairs[i].desc;
         } 
@@ -111,8 +111,14 @@ static EnumPair TTechniqueIdentifierLookup[] = {
     { KBIO_TECHID_NONE, "None" },
 	{ KBIO_TECHID_OCV, "Open Circuit Voltage (Rest)" },
     { KBIO_TECHID_CA, "Chrono-amperometry" },
+    { KBIO_TECHID_CALIMIT, "Chrono-amperometry with limits identifier" },
 	{ KBIO_TECHID_CP, "Chrono-potentiometry" },
+	{ KBIO_TECHID_CPLIMIT, "Chrono-potentiometry with limits identifier" },
 	{ KBIO_TECHID_CV, "Cyclic Voltammetry" },
+	{ KBIO_TECHID_PEIS, "Potentio Electrochemical Impedance" },
+    { KBIO_TECHID_TO, "Trigger Out identifier" },
+    { KBIO_TECHID_TI, "Trigger In identifier" },
+    { KBIO_TECHID_TOS, "Trigger Set identifier" },
 	{ KBIO_TECHID_LOOP, "Loop" }
 };
 
