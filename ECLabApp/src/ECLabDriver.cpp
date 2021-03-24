@@ -433,10 +433,10 @@ ECLabDriver::ECLabDriver(const char *portName, const char *ip, bool force_firmwa
 	std::cerr << "Connecting to " << ip << std::endl;
 	ECLabInterface::Connect(const_cast<char *>(ip), timeout, &m_ID, &m_infos);
 	ECLabInterface::testConnect(m_ID);
-	std::cerr << "Connected to device code " << m_infos.DeviceCode << ", channels: " << m_infos.NumberOfChannels << ", slots: " << m_infos.NumberOfSlots << ", RAM: " << m_infos.RAMSize << " MBytes" << std::endl;
-	std::cerr << "Device firmware version: " << m_infos.FirmwareVersion << " (" << m_infos.FirmwareDate_yyyy << "/" << m_infos.FirmwareDate_mm << "/" << m_infos.FirmwareDate_dd << ")" << std::endl;
+	std::cerr << "Connected to device code " << m_infos.DeviceCode << ", channels connected: " << m_infos.NumberOfChannels << ", slots: " << m_infos.NumberOfSlots << ", RAM: " << m_infos.RAMSize << " MBytes" << std::endl;
+	std::cerr << "Communication firmware version: " << m_infos.FirmwareVersion << " (" << m_infos.FirmwareDate_yyyy << "/" << m_infos.FirmwareDate_mm << "/" << m_infos.FirmwareDate_dd << ")" << std::endl;
 
-    std::vector<uint8_t> chans(m_infos.NumberOfChannels, 0);
+    std::vector<uint8_t> chans(16, 0);
     ECLabInterface::getChannelsPlugged(m_ID, chans);
     int nchan_plugged = 0;
     for(int i=0; i<chans.size(); ++i)
@@ -465,18 +465,29 @@ ECLabDriver::ECLabDriver(const char *portName, const char *ip, bool force_firmwa
     {
         if (res[i] < 0)
         {
-            std::cerr << "Error loading firmware on channel " << i << ": " << res[i] << std::endl;
+            std::cerr << "ERROR: loading firmware on channel " << i << ": " << res[i] << std::endl;
         }
 	}
 	TChannelInfos_t cinfo;
-	ECLabInterface::GetChannelInfos(m_ID, 0, &cinfo);
-	std::cerr << "Board version: " << cinfo.BoardVersion << " Board serial number: " <<  cinfo.BoardSerialNumber << " FirmwareCode: \"" 
-	<< firmwareCodeLookup(cinfo.FirmwareCode) << "\" Firmware version: " << cinfo.FirmwareVersion << " xilinx version: " << cinfo.XilinxVersion << std::endl;
-	
-    if (cinfo.FirmwareCode != KIBIO_FIRM_KERNEL)
+    for(int i=0; i<chans.size(); ++i)
     {
-        std::cerr << "ERROR: OEM library firmware not currently loaded" << std::endl;
+        if (chans[i] != 0)
+        {
+            memset(&cinfo, 0, sizeof(TChannelInfos_t));
+	        ECLabInterface::GetChannelInfos(m_ID, i, &cinfo);
+            if (cinfo.Channel != i)
+            {
+                std::cerr << "ERROR: cinfo.Channel != " << i << " for channel " << i << std::endl;
+            }
+	        std::cerr << "Board version: " << cinfo.BoardVersion << " Board serial number: " <<  cinfo.BoardSerialNumber << " FirmwareCode: \"" 
+	                  << firmwareCodeLookup(cinfo.FirmwareCode) << "\" Firmware version: " << cinfo.FirmwareVersion << " xilinx version: " << cinfo.XilinxVersion << std::endl;
+            if (cinfo.FirmwareCode != KIBIO_FIRM_KERNEL)
+            {
+                std::cerr << "ERROR: OEM library firmware not currently loaded" << std::endl;
+            }
+        }
     }
+	
 	setStringParam(P_host, ip);
 	setIntegerParam(P_devCode, m_infos.DeviceCode);
 	setIntegerParam(P_numChannels, m_infos.NumberOfChannels);
