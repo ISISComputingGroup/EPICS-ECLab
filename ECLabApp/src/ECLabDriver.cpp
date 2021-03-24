@@ -423,38 +423,71 @@ ECLabDriver::ECLabDriver(const char *portName, const char *ip, bool force_firmwa
 	ECLabInterface::GetLibVersion(version, &ver_size);
 	setStringParam(P_version, version);
 	std::cerr << "ECLab software library version: " << version << std::endl;
+    
+    std::string find_data;
+    uint32_t nDev = 0;
+    ECLabInterface::findEChemDev(find_data, nDev);
+	std::cerr << "Found " << nDev << " devices: " << find_data << std::endl;
+    
 	unsigned int timeout = 5;
 	std::cerr << "Connecting to " << ip << std::endl;
 	ECLabInterface::Connect(const_cast<char *>(ip), timeout, &m_ID, &m_infos);
 	ECLabInterface::testConnect(m_ID);
-	std::cerr << "Connected to device code " << m_infos.DeviceCode << " which has " << m_infos.RAMSize << " MBytes RAM" << std::endl;
-	std::cerr << "Device firmware version: " << m_infos.FirmwareVersion << " (" << m_infos.FirmwareDate_yyyy << "/" << m_infos.FirmwareDate_mm << "/" << m_infos.FirmwareDate_dd << ")" << std::endl;
+	std::cerr << "Connected to device code " << m_infos.DeviceCode << ", channels connected: " << m_infos.NumberOfChannels << ", slots: " << m_infos.NumberOfSlots << ", RAM: " << m_infos.RAMSize << " MBytes" << std::endl;
+	std::cerr << "Communication firmware version: " << m_infos.FirmwareVersion << " (" << m_infos.FirmwareDate_yyyy << "/" << m_infos.FirmwareDate_mm << "/" << m_infos.FirmwareDate_dd << ")" << std::endl;
 
-    // loads firmware on first channel (first array element = 1)
-	uint8 chans[] = { 1 };
-	int res[] = { 0 };
+    std::vector<uint8_t> chans(16, 0);
+    ECLabInterface::getChannelsPlugged(m_ID, chans);
+    int nchan_plugged = 0;
+    for(int i=0; i<chans.size(); ++i)
+    {
+        if (chans[i] != 0)
+        {
+            std::cerr << "Channel " << i << " is plugged" << std::endl;
+            ++nchan_plugged;
+        }
+    }
+    if (nchan_plugged == 0)
+    {
+        std::cerr << "ERROR: No channels are plugged" << std::endl;
+    }
 	std::string kernel_file = ecc_dir + "kernel4.bin";
 	std::replace(kernel_file.begin(), kernel_file.end(), '/', '\\');
 	std::string xlx_file = ecc_dir + "Vmp_iv_0395_aa.xlx";
 	std::replace(xlx_file.begin(), xlx_file.end(), '/', '\\');
+    std::vector<int> res(chans.size(),0);
     if (force_firmware_reload)
     {
 		std::cerr << "Forcing firmware reload" << std::endl;
     }
-	ECLabInterface::LoadFirmware(m_ID, chans, res, 1, 0, (force_firmware_reload ? 1 : 0), kernel_file.c_str(), xlx_file.c_str());
-	if (res[0] < 0)
-	{
-		std::cerr << "Error loading firmware on channel 0: " << res[0] << std::endl;
+	ECLabInterface::LoadFirmware(m_ID, &(chans[0]), &(res[0]), chans.size(), 0, (force_firmware_reload ? 1 : 0), kernel_file.c_str(), xlx_file.c_str());
+    for(int i=0; i<res.size(); ++i)
+    {
+        if (res[i] < 0)
+        {
+            std::cerr << "ERROR: loading firmware on channel " << i << ": " << res[i] << std::endl;
+        }
 	}
 	TChannelInfos_t cinfo;
-	ECLabInterface::GetChannelInfos(m_ID, 0, &cinfo);
-	std::cerr << "Board version: " << cinfo.BoardVersion << " Board serial number: " <<  cinfo.BoardSerialNumber << " FirmwareCode: \"" 
-	<< firmwareCodeLookup(cinfo.FirmwareCode) << "\" Firmware version: " << cinfo.FirmwareVersion << " xilinx version: " << cinfo.XilinxVersion << std::endl;
-	
-    if (cinfo.FirmwareCode != KIBIO_FIRM_KERNEL)
+    for(int i=0; i<chans.size(); ++i)
     {
-        std::cerr << "ERROR: OEM library firmware not currently loaded" << std::endl;
+        if (chans[i] != 0)
+        {
+            memset(&cinfo, 0, sizeof(TChannelInfos_t));
+	        ECLabInterface::GetChannelInfos(m_ID, i, &cinfo);
+            if (cinfo.Channel != i)
+            {
+                std::cerr << "ERROR: cinfo.Channel != " << i << " for channel " << i << std::endl;
+            }
+	        std::cerr << "Channel: " << i << " Board version: " << cinfo.BoardVersion << " Board serial number: " <<  cinfo.BoardSerialNumber << " FirmwareCode: \"" 
+	                  << firmwareCodeLookup(cinfo.FirmwareCode) << "\" Firmware version: " << cinfo.FirmwareVersion << " xilinx version: " << cinfo.XilinxVersion << std::endl;
+            if (cinfo.FirmwareCode != KIBIO_FIRM_KERNEL)
+            {
+                std::cerr << "ERROR: OEM library firmware not currently loaded on channel " << i << std::endl;
+            }
+        }
     }
+	
 	setStringParam(P_host, ip);
 	setIntegerParam(P_devCode, m_infos.DeviceCode);
 	setIntegerParam(P_numChannels, m_infos.NumberOfChannels);
@@ -504,9 +537,9 @@ void ECLabDriver::ECLabDataTaskC(void* arg)
     }
 }
 
-void ECLabDriver::updateCvals(int chan, TCurrentValues_t& cvals)
+void ECLabDriver::updateCvals(int chan, TCurrentValues_t& cvals, asynStatus paramStatus)
 {
-	static int file_counter = 0;
+    static int file_counter = 0;
 	setIntegerParam(chan, P_memFilled, cvals.MemFilled);
 	setDoubleParam(chan, P_currEWE, cvals.Ewe);
 	setDoubleParam(chan, P_currECE, cvals.Ece);
@@ -549,6 +582,13 @@ void ECLabDriver::updateCvals(int chan, TCurrentValues_t& cvals)
 	    epicsTimeGetCurrent(&ts);
 		m_generalLog[chan] << getAbsTime(ts, 0.0) << "," <<  getAbsTime(m_start_time[chan], cvals.ElapsedTime) << "," << cvals.ElapsedTime << "," << cvals.Ewe << "," << cvals.Ece << "," << cvals.I << "," << cvals.MemFilled << "," << cvals.Rcomp << "," << cvals.Freq << "," << cvals.State << "," << cvals.TimeBase << "," << cvals.EweRangeMin << "," << cvals.EweRangeMax << "," << cvals.EceRangeMin << "," << cvals.EceRangeMax << "," << cvals.Eoverflow << "," << cvals.Ioverflow << "," << cvals.IRange << "," << cvals.Saturation << "," << cvals.OptErr << "," << cvals.OptPos << "\n"; 
 	}
+
+    setParamStatus(chan, P_currEWE, paramStatus);
+    setParamStatus(chan, P_currECE, paramStatus);
+    setParamStatus(chan, P_currI, paramStatus);
+    setParamStatus(chan, P_currSTATE, paramStatus);
+    setParamStatus(chan, P_currTIME, paramStatus);
+    setParamStatus(chan, P_fileName, paramStatus);
 }
 
 void ECLabDriver::ECLabValuesTask() 
@@ -557,12 +597,14 @@ void ECLabDriver::ECLabValuesTask()
 	TChannelInfos_t cinfo;
 //	uint32_t len_buffer;
 //	char buffer[256];
+    asynStatus paramStatus;
     while(true)
     {
 	    for(int i=0; i<m_infos.NumberOfChannels; ++i)
 		{
 		    if (ECLabInterface::IsChannelPlugged(m_ID, i))
 			{
+                paramStatus = asynSuccess;
 				try
 				{
 					ECLabInterface::GetChannelInfos(m_ID, i, &cinfo);
@@ -571,12 +613,13 @@ void ECLabDriver::ECLabValuesTask()
 				catch(const std::exception& ex)
 				{
 					errlogSevPrintf(errlogInfo, "%s", ex.what());
+                    paramStatus = asynError;
 				}
 //				len_buffer = sizeof(buffer);
 //				memset(buffer, 0, len_buffer);
 //				ECLabInterface::GetMessage(m_ID, i, buffer, &len_buffer);				
 				lock();
-				updateCvals(i, cvals);
+				updateCvals(i, cvals, paramStatus);
 				setIntegerParam(i, P_numTech, cinfo.NbOfTechniques);
 				setIntegerParam(i, P_memSize, cinfo.MemSize);
 				setDoubleParam(i, P_memPercentFilled, 100.0 * static_cast<double>(cinfo.MemFilled) / static_cast<double>(cinfo.MemSize));
@@ -912,7 +955,7 @@ void ECLabDriver::ECLabDataTask()
 					continue;
 				}
 				lock();
-				updateCvals(i, cvals);
+				updateCvals(i, cvals, asynSuccess); // error status set in ECLabValuesTask() thread
 				setIntegerParam(i, P_dataTechInd, dinfo.TechniqueIndex);
 				setIntegerParam(i, P_dataTechID, dinfo.TechniqueID);
 				setIntegerParam(i, P_dataLoop, dinfo.loop);
@@ -1060,6 +1103,11 @@ extern "C" {
 		catch(const std::exception& ex)
 		{
 			errlogSevPrintf(errlogFatal, "ECLabConfigure failed: %s\n", ex.what());
+			return(asynError);
+		}
+		catch(...)
+		{
+			errlogSevPrintf(errlogFatal, "ECLabConfigure failed: unknown error");
 			return(asynError);
 		}
 	}

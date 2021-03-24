@@ -16,6 +16,9 @@
 #include <sstream>
 #include <BLFunctions.h>
 
+typedef unsigned uint32;
+BIOLOGIC_API(int) BL_FindEChemDev(char* PChar, uint32* psize, uint32* pNbrDev);
+
 #include "BLFunctionsStub.h"
 
 #define BLCONCAT(A,B) A##B
@@ -115,6 +118,20 @@ struct ECLabInterface
 		BL_CALL(BL_StartChannel, ID, channel);
 	}
 
+    static void getChannelsPlugged( int ID, std::vector<uint8_t>& chans )
+    {
+        BL_CALL(BL_GetChannelsPlugged, ID, &(chans[0]), chans.size());
+    }
+    
+    static void findEChemDev(std::string& data, uint32& nDev)
+    {
+        char ret_data[512];
+        uint32 bufsiz = sizeof(ret_data) - 1;
+        nDev = 0;
+        BL_CALL(BL_FindEChemDev, ret_data, &bufsiz, &nDev);
+        data.assign(ret_data, bufsiz);
+    }
+    
 	static bool IsChannelPlugged( int ID, uint8 ch )
 	{
 	    if (BLSIM)

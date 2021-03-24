@@ -38,7 +38,7 @@ public:
                      int loop, double start_time, double time_base, TDataBuffer_t* dbuffer, int xctr);
     void processPEISData(std::fstream& fs0, std::fstream& fs1, epicsTimeStamp& chan_start_time, int nrows, int ncols, int technique_index, int process_index, 
                      int loop, double start_time, double time_base, TDataBuffer_t* dbuffer);
-	void updateCvals(int chan, TCurrentValues_t& cvals);
+	void updateCvals(int chan, TCurrentValues_t& cvals, asynStatus paramStatus);
 	
 private:
 	int P_version; // string
