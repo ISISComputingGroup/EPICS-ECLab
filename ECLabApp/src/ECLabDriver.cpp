@@ -424,10 +424,10 @@ ECLabDriver::ECLabDriver(const char *portName, const char *ip, bool force_firmwa
 	setStringParam(P_version, version);
 	std::cerr << "ECLab software library version: " << version << std::endl;
     
-    std::string find_data;
-    uint32_t nDev = 0;
-    ECLabInterface::findEChemDev(find_data, nDev);
-	std::cerr << "Found " << nDev << " devices: " << find_data << std::endl;
+    //std::string find_data;
+    //uint32_t nDev = 0;
+    //ECLabInterface::findEChemDev(find_data, nDev);
+	//std::cerr << "Found " << nDev << " devices: " << find_data << std::endl;
     
 	unsigned int timeout = 5;
 	std::cerr << "Connecting to " << ip << std::endl;

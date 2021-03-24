@@ -17,7 +17,8 @@
 #include <BLFunctions.h>
 
 typedef unsigned uint32;
-BIOLOGIC_API(int) BL_FindEChemDev(char* PChar, uint32* psize, uint32* pNbrDev);
+
+//BIOLOGIC_API(int) BL_FindEChemDev(char* PChar, uint32* psize, uint32* pNbrDev);
 
 #include "BLFunctionsStub.h"
 
@@ -128,7 +129,8 @@ struct ECLabInterface
         char ret_data[512];
         uint32 bufsiz = sizeof(ret_data) - 1;
         nDev = 0;
-        BL_CALL(BL_FindEChemDev, ret_data, &bufsiz, &nDev);
+        memset(ret_data, '\0', sizeof(ret_data));
+//        BL_CALL(BL_FindEChemDev, ret_data, &bufsiz, &nDev);
         data.assign(ret_data, bufsiz);
     }
     
