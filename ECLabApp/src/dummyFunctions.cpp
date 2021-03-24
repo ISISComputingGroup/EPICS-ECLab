@@ -147,6 +147,7 @@ static void init_channels()
 	    my_channels[i].info.Channel = i;
 	    my_channels[i].info.State = KBIO_STATE_STOP;
 	    my_channels[i].info.NbOfTechniques = 0;
+        my_channels[i].info.FirmwareCode = KIBIO_FIRM_KERNEL;
 	}
 }
 

@@ -31,8 +31,12 @@ class ECLabException : public std::runtime_error
 	    char mesg[256];
 		std::ostringstream oss;
 		unsigned int mesg_size = sizeof(mesg);
-		if ( BL_GetErrorMsg(code, mesg, &mesg_size) == 0)
+		if ( BL_GetErrorMsg(code, mesg, &mesg_size) == 0 )
 		{
+            if (code == ERR_GEN_ECLAB_LOADED)
+            {
+                strcat(mesg, " (this is invalid for use with OEM library)");
+            }
 		    return mesg;
 		}
 		else

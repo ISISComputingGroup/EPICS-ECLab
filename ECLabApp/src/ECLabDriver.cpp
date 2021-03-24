@@ -451,6 +451,10 @@ ECLabDriver::ECLabDriver(const char *portName, const char *ip, bool force_firmwa
 	std::cerr << "Board version: " << cinfo.BoardVersion << " Board serial number: " <<  cinfo.BoardSerialNumber << " FirmwareCode: \"" 
 	<< firmwareCodeLookup(cinfo.FirmwareCode) << "\" Firmware version: " << cinfo.FirmwareVersion << " xilinx version: " << cinfo.XilinxVersion << std::endl;
 	
+    if (cinfo.FirmwareCode != KIBIO_FIRM_KERNEL)
+    {
+        std::cerr << "ERROR: OEM library firmware not currently loaded" << std::endl;
+    }
 	setStringParam(P_host, ip);
 	setIntegerParam(P_devCode, m_infos.DeviceCode);
 	setIntegerParam(P_numChannels, m_infos.NumberOfChannels);
