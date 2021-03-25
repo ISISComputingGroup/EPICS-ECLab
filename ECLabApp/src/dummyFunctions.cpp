@@ -16,6 +16,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <cstdint>
 #include <time.h>
 
 #include <epicsStdio.h>
