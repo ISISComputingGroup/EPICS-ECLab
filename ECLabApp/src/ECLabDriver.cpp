@@ -19,6 +19,7 @@
 #include <vector>
 #include <fstream>
 #include <algorithm>
+#include <cstdint>
 
 #include <epicsTypes.h>
 #include <epicsTime.h>
