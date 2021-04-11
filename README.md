@@ -1,9 +1,36 @@
 # EPICS driver for BioLogic EC-LAB potentiostats (SP-300, SP-240 etc.)
 
-You will need a copy of the EC-Lab OEM Development package from http://www.bio-logic.info/potentiostat-electrochemistry-ec-lab/software/oem-package/ to build and use this software
-The ECLABSDK macro in the Makefile will then need to point to this root
+You will need a copy of the EC-Lab(R) Development package from https://www.biologic.net/support-software/ec-lab-oem-development-package/ to build and use this software.
+This vendor package is only available for Windows, so this IOC can only be built and runs on Microsoft Windows.
+
+The `ECLABSDK` macro in the Makefile will then need to be changed to point to the installation location of the above developer package
 
 Beside EPICS BASE, the ASYN module is also needed and its location must be added to configure/RELEASE
- 
-Contact freddie.akeroyd@stfc.ac.uk for further details
+Other EPICS modules are optional as decribed int he comments.
 
+Note that the EC-Lab(R) Development package will download firmware to the potentiostat that is compatible with the EC-Lab Exrpess software rather than the
+full EC-Lab software. It is thus not possible to have the full EC-Lab software and the IOC communicating with the potentiostat at the same time. It is possible
+to have both the EC-Lab Express and IOC communicating with the potentiostat simultaneously, but coordination is required into which piece of software uploads
+techniques and downloads data.
+
+The system is configured by specifying parameters for techniques via process variables, see the `*.substitutions` files in https://github.com/ISISComputingGroup/EPICS-ECLab/tree/master/ECLabApp/Db
+for how these are set up for different techniques. The PARAM column defines a part of a process variale name, which corresponds to a EcLab parameter name (LABEL) as specified in the
+ECLab developer manual for the particular technique. The biologic GUI software and developer library sometimes store parameters differently e.g separate values on the GUI may
+be specified via an array - see the developer library documentation for the technique for the convention.
+
+Each technique has its own set of parameters and internal data format, so the software may not currently handle the technique you require. It is not too hard to add another, feel
+free to contact us.    
+
+An example of simple usage is in `test_ocv.bat`, see also `sp240.py`
+
+The basic principle is:
+
+- Set a filename prefix for data (written to a csv file)
+- Set technique parameters
+- Write list of techniques names to use to `LOADTECH` pv
+- Write to `START` pv
+
+To set the `record every dE` parameter for example you would set the `<prefix>:C0:T:CV:0:REDE:SP`
+process variable before loading the technique onto the potentiostat (via LOADTECH pv). The `:C0:` in the name is for channel 0, the second `:0:` is for the first instance of that named technique that will be loaded.
+
+Contact freddie.akeroyd@stfc.ac.uk for further details

@@ -1,12 +1,18 @@
+## ASYN is needed to build the driver
 ASYN=$(SUPPORT)/asyn/master
+
+## ONCRPC will not be needed for most users, so just comment it if you do not have it
 ONCRPC=$(SUPPORT)/oncrpc/master
 
-## path to top of our build area, we copy ecc files
-## to $(ECLAB)/ecc and $(ECLAB) is used within the program 
+## path to top of our EPICS build area where the IOC lives, we copy ecc files
+## to $(ECLAB)/ecc and $(ECLAB) is used within the program to reference things 
 ECLAB=$(SUPPORT)/ECLab/master
-## test ioc doesn't do anything with autosave yet
+
+## the test ioc doesn't do anything with autosave yet
 #AUTOSAVE=$(SUPPORT)/autosave/master
-## DEVIOCSTATS is optional, the OPI graph uses the HEARTBEAT PV from it for graphs
+
+## DEVIOCSTATS is optional, the OPI graph uses the HEARTBEAT PV from it for
+## graph updates
 DEVIOCSTATS=$(SUPPORT)/devIocStats/master
 
 # optional extra local definitions here
