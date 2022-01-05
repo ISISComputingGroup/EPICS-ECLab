@@ -40,6 +40,10 @@ ECLab_LIBS += $(EPICS_BASE_IOC_LIBS)
 # A version of MSI is included in epics base 3.15 and 7 and referenced by the MSI3_15 macro
 # If this macro is not defined, it will try looking for msi.exe in your current windows PATH
 
+ifeq ($(MSI3_15),)
+MSI3_15 := msi
+endif
+
 include $(TOP)/configure/RULES
 #----------------------------------------
 #  ADD RULES AFTER THIS LINE
@@ -47,22 +51,22 @@ include $(TOP)/configure/RULES
 ../ECLabParams.cpp : BooleanArrayParams.cpp IntegerArrayParams.cpp SingleArrayParams.cpp
 
 BooleanParams.cpp : $(TOP)/ECLabApp/Db/ECLabBooleanParams.substitutions
-	$(MSI3_15=msi) -o $@ -M "TYPE=Boolean" -S $< $(TOP)/ECLabApp/src/ScalarParams.cpp
+	$(MSI3_15) -o $@ -M "TYPE=Boolean" -S $< $(TOP)/ECLabApp/src/ScalarParams.cpp
 	
 IntegerParams.cpp : $(TOP)/ECLabApp/Db/ECLabIntegerParams.substitutions
-	$(MSI3_15=msi) -o $@ -M "TYPE=Integer" -S $< $(TOP)/ECLabApp/src/ScalarParams.cpp
+	$(MSI3_15) -o $@ -M "TYPE=Integer" -S $< $(TOP)/ECLabApp/src/ScalarParams.cpp
 
 SingleParams.cpp : $(TOP)/ECLabApp/Db/ECLabSingleParams.substitutions
-	$(MSI3_15=msi) -o $@ -M "TYPE=Single" -S $< $(TOP)/ECLabApp/src/ScalarParams.cpp
+	$(MSI3_15) -o $@ -M "TYPE=Single" -S $< $(TOP)/ECLabApp/src/ScalarParams.cpp
 
 BooleanArrayParams.cpp : $(TOP)/ECLabApp/Db/ECLabBooleanArrayParams.substitutions
-	$(MSI3_15=msi) -o $@ -M "TYPE=BooleanArray" -S $< $(TOP)/ECLabApp/src/ArrayParams.cpp
+	$(MSI3_15) -o $@ -M "TYPE=BooleanArray" -S $< $(TOP)/ECLabApp/src/ArrayParams.cpp
 	
 IntegerArrayParams.cpp : $(TOP)/ECLabApp/Db/ECLabIntegerArrayParams.substitutions
-	$(MSI3_15=msi) -o $@ -M "TYPE=IntegerArray" -S $< $(TOP)/ECLabApp/src/ArrayParams.cpp
+	$(MSI3_15) -o $@ -M "TYPE=IntegerArray" -S $< $(TOP)/ECLabApp/src/ArrayParams.cpp
 
 SingleArrayParams.cpp : $(TOP)/ECLabApp/Db/ECLabSingleArrayParams.substitutions
-	$(MSI3_15=msi) -o $@ -M "TYPE=SingleArray" -S $< $(TOP)/ECLabApp/src/ArrayParams.cpp
+	$(MSI3_15) -o $@ -M "TYPE=SingleArray" -S $< $(TOP)/ECLabApp/src/ArrayParams.cpp
 	$(MKDIR) $(TOP)/ecc
 	$(CP) $(ECLABSDK)/*.ecc $(TOP)/ecc
 	$(CP) $(ECLABSDK)/*.bin $(TOP)/ecc
