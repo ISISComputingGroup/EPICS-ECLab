@@ -10,6 +10,7 @@ errlogInit2(65536, 256)
 
 cd ${TOP}
 
+## prefix for IOC PVs in addition to $(MYPVPREFIX)
 epicsEnvSet("IOCPRFX", "ECLAB_01")
 
 ## Register all support components
