@@ -19,3 +19,4 @@ relPaths.sh
 .project
 *.py[co]
 NULL
+dllCopy.bat
