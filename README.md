@@ -13,6 +13,8 @@ full EC-Lab software. It is thus not possible to have the full EC-Lab software a
 to have both the EC-Lab Express and IOC communicating with the potentiostat simultaneously, but coordination is required into which piece of software uploads
 techniques and downloads data.
 
+Though not all techniques in the full software package are directly available via the developer/express software, some of these missing techniques are ways to manage combinations/sequences of other techniques and so can be achieved using these base techniques and scripting. For example Galvanostatic Cycling with Potential Limitation (GCPL) is not directly supported, but can be emulated via a combination of CP, CA and OCV. Similary Modulo Bat (MB) is a sequence of operations that can likely also be emulated by the same approach.  
+
 The system is configured by specifying parameters for techniques via process variables, see the `*.substitutions` files in https://github.com/ISISComputingGroup/EPICS-ECLab/tree/master/ECLabApp/Db
 for how these are set up for different techniques. The `PARAM` column defines a part of a process variale name, which corresponds to a EcLab parameter name (`LABEL`) as specified in the
 ECLab developer manual for the particular technique. The biologic GUI software and developer library sometimes store parameters differently e.g separate values on the GUI may
