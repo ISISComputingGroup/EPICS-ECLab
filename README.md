@@ -36,4 +36,4 @@ To set the `record every dE` parameter for the `CV` technique you would set the 
 process variable before loading the technique onto the potentiostat (via LOADTECH pv). The `:C0:` in the name is for channel 0 of the potentiostat,
 the second `:0:` means this value is to be used for the first instance of that named technique.
 
-Contact freddie.akeroyd@stfc.ac.uk for further details
+Contact ISISExperimentControls@stfc.ac.uk for further details/help
