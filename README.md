@@ -1,7 +1,8 @@
 # EPICS driver for BioLogic EC-LAB potentiostats (SP-300, SP-240 etc.)
 
-You will need a copy of the EC-Lab(R) Development package from https://www.biologic.net/support-software/ec-lab-oem-development-package/ to build and use this software.
-This vendor package is only available for Windows, so this IOC can only be built and runs on Microsoft Windows.
+You will need a copy of the EC-Lab(R) OEM Developer package from https://www.biologic.net/support-software/ec-lab-oem-development-package/ to build and use this software.
+This vendor package is only available for Windows, so this IOC can only be built and runs on Microsoft Windows. **Note that this OEM library does not
+support Premium "p" boards - see Instrument Compatibility on the above link.** 
 
 The `ECLABSDK` macro in `ECLabApp/src/Makefile` will then need to be changed to point to the installation location of the above developer package
 
@@ -13,7 +14,10 @@ full EC-Lab software. It is thus not possible to have the full EC-Lab software a
 to have both the EC-Lab Express and IOC communicating with the potentiostat simultaneously, but coordination is required into which piece of software uploads
 techniques and downloads data.
 
-Though not all techniques in the full software package are directly available via the developer/express software, some of these missing techniques are ways to manage combinations/sequences of other techniques and so can be achieved using these base techniques and scripting. For example Galvanostatic Cycling with Potential Limitation (GCPL) is not directly supported, but can be emulated via a combination of CP, CA and OCV. Similary Modulo Bat (MB) is a sequence of operations that can likely also be emulated by the same approach.  
+Though not all techniques in the full software package are directly available via the developer/express software, some of these missing techniques are ways
+to manage combinations/sequences of other techniques and so can be achieved using these base techniques and scripting.
+For example Galvanostatic Cycling with Potential Limitation (GCPL) is not directly supported, but can be emulated via a
+combination of CP, CA and OCV. Similary Modulo Bat (MB) is a sequence of operations that can likely also be emulated by the same approach.  
 
 The system is configured by specifying parameters for techniques via process variables, see the `*.substitutions` files in https://github.com/ISISComputingGroup/EPICS-ECLab/tree/master/ECLabApp/Db
 for how these are set up for different techniques. The `PARAM` column defines a part of a process variale name, which corresponds to a EcLab parameter name (`LABEL`) as specified in the

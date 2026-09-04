@@ -45,3 +45,5 @@ BIOLOGIC_API(int) BL_GetHardConfStub( int ID, uint8 channel, THardwareConf_t* pH
 BIOLOGIC_API(int) BL_SetHardConfStub( int ID, uint8 channel, THardwareConf_t HardConf );
 
 BIOLOGIC_API(int) BL_FindEChemDevStub( char* data, uint32* siz, uint32* ndv);
+
+BIOLOGIC_API(int) BL_GetChannelBoardTypeStub( int ID, uint8 ch, uint32_t* pChannelType);

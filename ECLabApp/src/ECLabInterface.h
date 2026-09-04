@@ -109,6 +109,11 @@ struct ECLabInterface
 		BL_CALL(BL_GetChannelInfos, ID, ch, pInfos);
 	}
 	
+	static void GetChannelBoardType (int ID, uint8 ch, uint32_t* pChannelType)
+	{
+		BL_CALL(BL_GetChannelBoardType, ID, ch, pChannelType);
+	}
+
 	static void StopChannel (int ID, uint8 channel)
 	{
 		BL_CALL(BL_StopChannel, ID, channel);
