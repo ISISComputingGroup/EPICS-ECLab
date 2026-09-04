@@ -11,9 +11,15 @@ include $(TOP)/configure/CONFIG
 LIBRARY_IOC += ECLab
 
 # location of ECLab OEM development kit
+# layout changed over time, so specify
+# root of SDK
 ECLABSDK = $(ICPBINARYDIR)/ECLab
+# where to find BLFunctions.h and BLStructs.h
+ECLABINCLUDE = $(ECLABSDK)/Examples/C-C++/include
+# directory of lib, dll and ecc files
+ECLABLIB = $(ECLABSDK)/lib
 
-USR_CXXFLAGS += -I$(ECLABSDK)/include -DBIOLOGIC_EXPORTS
+USR_CXXFLAGS += -I$(ECLABINCLUDE) -DBIOLOGIC_EXPORTS
 
 DBD += ECLab.dbd
 
@@ -23,17 +29,15 @@ ECLab_LIBS += asyn
 
 ifneq ($(findstring windows,$(EPICS_HOST_ARCH)),) 
 ECLab_LIBS += EClib64 # blfind64
-BIN_INSTALLS_WIN32 += $(wildcard $(ECLABSDK)/dll/win64/*.dll)
-LIB_INSTALLS_WIN32 += $(wildcard $(ECLABSDK)/lib/win64/*.lib)
 endif
 ifneq ($(findstring win32,$(EPICS_HOST_ARCH)),) 
 ECLab_LIBS += EClib # blfind
-BIN_INSTALLS_WIN32 += $(wildcard $(ECLABSDK)/dll/win32/*.dll)
-LIB_INSTALLS_WIN32 += $(wildcard $(ECLABSDK)/lib/win32/*.lib)
 endif
 
-EClib64_DIR = $(ECLABSDK)/lib/win64
-EClib_DIR = $(ECLABSDK)/lib/win32
+BIN_INSTALLS_WIN32 += $(wildcard $(ECLABLIB)/*.dll)
+LIB_INSTALLS_WIN32 += $(wildcard $(ECLABLIB)/*.lib)
+EClib64_DIR = $(ECLABLIB)
+EClib_DIR = $(ECLABLIB)
 
 ECLab_LIBS += $(EPICS_BASE_IOC_LIBS)
 
@@ -68,7 +72,6 @@ IntegerArrayParams.cpp : $(TOP)/ECLabApp/Db/ECLabIntegerArrayParams.substitution
 SingleArrayParams.cpp : $(TOP)/ECLabApp/Db/ECLabSingleArrayParams.substitutions
 	$(MSI3_15) -o $@ -M "TYPE=SingleArray" -S $< $(TOP)/ECLabApp/src/ArrayParams.cpp
 	$(MKDIR) $(TOP)/ecc
-	$(CP) $(ECLABSDK)/*.ecc $(TOP)/ecc
-	$(CP) $(ECLABSDK)/*.bin $(TOP)/ecc
-	$(CP) $(ECLABSDK)/*.xlx $(TOP)/ecc
-	
+	$(CP) $(ECLABLIB)/*.ecc $(TOP)/ecc
+	$(CP) $(ECLABLIB)/*.bin $(TOP)/ecc
+	$(CP) $(ECLABLIB)/*.xlx $(TOP)/ecc
