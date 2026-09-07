@@ -136,7 +136,7 @@ asynStatus ECLabDriver::writeOctet(asynUser *pasynUser, const char *value, size_
 					params.pParams = NULL;
 				}
 				params.len = values.size();
-				std::string ecc_file = ecc_dir + m_techniques[i].name + "4.ecc";
+				std::string ecc_file = ecc_dir + m_techniques[i].name + getTechniqueSuffix(m_board_type[addr]);
 				std::replace(ecc_file.begin(), ecc_file.end(), '/', '\\');
 				ECLabInterface::LoadTechnique(m_ID, addr, const_cast<char*>(ecc_file.c_str()), params, first, last, false);
 			}
@@ -227,7 +227,7 @@ asynStatus ECLabDriver::writeInt32(asynUser *pasynUser, epicsInt32 value)
 					params.pParams = &(values[j]);
 					int n = values.size() - j;
 					params.len = (n > maxupdate ? maxupdate : n);
-					std::string ecc_file = ecc_dir + m_techniques[i].name + "4.ecc";
+					std::string ecc_file = ecc_dir + m_techniques[i].name + getTechniqueSuffix(m_board_type[addr]);
 					std::replace(ecc_file.begin(), ecc_file.end(), '/', '\\');
 				    ECLabInterface::UpdateParameters(m_ID, addr, i, params, const_cast<char*>(ecc_file.c_str()));
 				}
@@ -439,34 +439,50 @@ ECLabDriver::ECLabDriver(const char *portName, const char *ip, bool force_firmwa
 
     std::vector<uint8_t> chans(16, 0);
     ECLabInterface::getChannelsPlugged(m_ID, chans);
-    int nchan_plugged = 0;
+    int nchan_plugged = 0, max_chan = -1;
     for(int i=0; i<chans.size(); ++i)
     {
         if (chans[i] != 0)
         {
-            std::cerr << "Channel " << i << " is plugged" << std::endl;
+            uint32_t chan_type = 0; // 0 is BOARD_TYPE_CHANNEL_UNKNOWN
+            ECLabInterface::GetChannelBoardType(m_ID, i, &chan_type); 
+            std::cerr << "Channel " << i << " is plugged and board type " << chan_type << std::endl;
+            if (chan_type == 3) { // BOARD_TYPE_CHANNEL_PREMIUM_P
+                std::cerr << "WARNING: Premium \"p\" board detected - this may not be supported by EC-LAB OEM developer package" << std::endl;
+                std::cerr << "WARNING: Check https://www.biologic.net/softwares/ec-lab-oem-development-package/" << std::endl;
+            }
             ++nchan_plugged;
+            max_chan = i;
+            m_board_type[i] = chan_type;
         }
     }
+    std::string kernel_file, xlx_file;
+    chans.resize(max_chan + 1);
     if (nchan_plugged == 0)
     {
         std::cerr << "ERROR: No channels are plugged" << std::endl;
     }
-	std::string kernel_file = ecc_dir + "kernel4.bin";
-	std::replace(kernel_file.begin(), kernel_file.end(), '/', '\\');
-	std::string xlx_file = ecc_dir + "Vmp_iv_0395_aa.xlx";
-	std::replace(xlx_file.begin(), xlx_file.end(), '/', '\\');
-    std::vector<int> res(chans.size(),0);
     if (force_firmware_reload)
     {
 		std::cerr << "Forcing firmware reload" << std::endl;
     }
-	ECLabInterface::LoadFirmware(m_ID, &(chans[0]), &(res[0]), chans.size(), 0, (force_firmware_reload ? 1 : 0), kernel_file.c_str(), xlx_file.c_str());
-    for(int i=0; i<res.size(); ++i)
+    for(int i=0; i<chans.size(); ++i)
     {
-        if (res[i] < 0)
+        std::vector<uint8_t> chan_tmp(chans.size(), 0);
+        std::vector<int> res(chans.size(), 0);
+        if (chans[i] != 0) {
+            getFirmwareFiles(m_board_type[i], kernel_file, xlx_file);
+            chan_tmp[i] = 1;
+            std::cerr << "channel " << i << " kernel \"" << kernel_file << "\" xlx \"" << xlx_file << "\"" << std::endl;
+	        ECLabInterface::LoadFirmware(m_ID, &(chan_tmp[0]), &(res[0]), chans.size(), 0, (force_firmware_reload ? 1 : 0),
+                kernel_file.c_str(), xlx_file.c_str());
+        }
+        for(int i=0; i<res.size(); ++i)
         {
-            std::cerr << "ERROR: loading firmware on channel " << i << ": " << res[i] << std::endl;
+            if (res[i] < 0)
+            {
+                std::cerr << "ERROR: loading firmware on channel " << i << ": status=" << res[i] << std::endl;
+            }
         }
 	}
 	TChannelInfos_t cinfo;
@@ -517,6 +533,48 @@ ECLabDriver::ECLabDriver(const char *portName, const char *ip, bool force_firmwa
 		printf("%s:%s: epicsThreadCreate failure\n", driverName, functionName);
 		return;
 	}
+}
+
+void ECLabDriver::getFirmwareFiles( uint32_t board_type, std::string& kernel_file, std::string& xlx_file )
+{
+    static const std::string ecc_dir = macEnvExpand("$(ECLAB)/ecc/");
+    switch( board_type )
+    {
+        case 1:
+            kernel_file =  ecc_dir + "kernel.bin";
+            xlx_file = ecc_dir + "Vmp_ii_0437_a6.xlx";
+            break;
+        case 2:
+            kernel_file = ecc_dir + "kernel4.bin";
+            xlx_file = ecc_dir + "vmp_iv_0395_aa.xlx";
+            break;
+        case 3:
+            kernel_file = ecc_dir + "kernel5.bin";
+            xlx_file = "";
+            break;
+        default:
+            std::cerr << "Unknown board type " << board_type << std::endl;
+            kernel_file = "";
+            xlx_file = "";
+            break;
+    }
+	std::replace(kernel_file.begin(), kernel_file.end(), '/', '\\');
+	std::replace(xlx_file.begin(), xlx_file.end(), '/', '\\');
+}
+
+std::string ECLabDriver::getTechniqueSuffix( uint32_t board_type )
+{
+    switch( board_type )
+    {
+        case 1:
+            return ".ecc";
+        case 2:
+            return "4.ecc";
+        case 3:
+            return "5.ecc";
+        default:
+            return "";
+    }
 }
 
 /// @todo Might use this for background polling if implementing I/O Intr scanning
@@ -637,9 +695,26 @@ void ECLabDriver::ECLabValuesTask()
     }
 }
 
-double ECLabDriver::getTime(unsigned thigh, unsigned tlow, double start_time, double time_base)
+double ECLabDriver::getTime(uint32_t* ptime, double start_time, double time_base, uint32_t chan_type)
 {
-    return (((__int64)thigh << 32) + tlow) * time_base + start_time;
+    // old  unsigned thigh, unsigned tlow   are ptime[0] and ptime[1]
+    // previously    return (((__int64)thigh << 32) + tlow) * time_base + start_time;
+    double duration_since_start(0.0);
+    int ret = BL_ConvertTimeChannelNumericIntoSeconds(ptime, &duration_since_start, time_base, chan_type);
+    if (ret != 0) {
+        std::cerr << "BL_ConvertTimeChannelNumericIntoSeconds(): " << ECLabException::translateCode(ret) << std::endl;
+    }
+    return start_time + duration_since_start;
+}
+
+float ECLabDriver::convertChannelNumericIntoSingle(uint32_t num, uint32_t chan_type)
+{
+    float fval(0.0);
+    int ret = BL_ConvertChannelNumericIntoSingle(num, &fval, chan_type);
+    if (ret != 0) {
+        std::cerr << "BL_ConvertChannelNumericIntoSingle(): " << ECLabException::translateCode(ret) << std::endl;
+    }
+    return fval;
 }
 
 std::string ECLabDriver::getAbsTime(epicsTimeStamp& base, double offset)
@@ -662,25 +737,24 @@ static unsigned countBits(unsigned v)
 	return c;
 }
 
-void ECLabDriver::processXCTRVals(std::fstream& fs, unsigned* row_data, unsigned xctr, int col_start, int ncols)
+void ECLabDriver::processXCTRVals(uint32_t chan_type, std::fstream& fs, unsigned* row_data, unsigned xctr, int col_start, int ncols)
 {
-	int ret;
 	float fval;
 	if (xctr & 0x1) // ece
 	{
-	    ret = BL_ConvertNumericIntoSingle(row_data[col_start], &fval);
+	    fval = convertChannelNumericIntoSingle(row_data[col_start], chan_type);
 		fs << "," << fval;
 		++col_start;
 	}
 	if (xctr & 0x20) // control
 	{
-	    ret = BL_ConvertNumericIntoSingle(row_data[col_start], &fval);
+	    fval = convertChannelNumericIntoSingle(row_data[col_start], chan_type);
 		fs << "," << fval;
 		++col_start;
 	}
 	if (xctr & 0x40) // charge
 	{
-	    ret = BL_ConvertNumericIntoSingle(row_data[col_start], &fval);
+	    fval = convertChannelNumericIntoSingle(row_data[col_start], chan_type);
 		fs << "," << fval;
 		++col_start;
 	}
@@ -711,7 +785,7 @@ void ECLabDriver::processXCTRHeader(std::fstream& fs, unsigned xctr)
 	}
 }
 
-void ECLabDriver::processPEISData(std::fstream& fs0, std::fstream& fs1, epicsTimeStamp& chan_start_time, int nrows, int ncols, int technique_index, int process_index, 
+void ECLabDriver::processPEISData(uint32_t chan_type, std::fstream& fs0, std::fstream& fs1, epicsTimeStamp& chan_start_time, int nrows, int ncols, int technique_index, int process_index, 
                      int loop, double start_time, double time_base, TDataBuffer_t* dbuffer)
 {
 	unsigned* data = dbuffer->data;
@@ -730,9 +804,9 @@ void ECLabDriver::processPEISData(std::fstream& fs0, std::fstream& fs1, epicsTim
 	    for(int i=0; i<nrows; ++i)
 	    {
 		    idx = i * ncols;
-		    t = getTime(data[idx + 0], data[idx + 1], start_time, time_base);
-			BL_ConvertNumericIntoSingle(data[idx + 2], &ewe);
-			BL_ConvertNumericIntoSingle(data[idx + 3], &currI);
+		    t = getTime(data + idx, start_time, time_base, chan_type);
+			ewe = convertChannelNumericIntoSingle(data[idx + 2], chan_type);
+			currI = convertChannelNumericIntoSingle(data[idx + 3], chan_type);
 			fs0 << getAbsTime(chan_start_time, t) << "," << t << "," << loop << "," << ewe << "," << currI << "\n";
 		}
 	}
@@ -746,17 +820,17 @@ void ECLabDriver::processPEISData(std::fstream& fs0, std::fstream& fs1, epicsTim
 	    for(int i=0; i<nrows; ++i)
 	    {
 		    idx = i * ncols;
-			BL_ConvertNumericIntoSingle(data[idx + 0], &freq);
-			BL_ConvertNumericIntoSingle(data[idx + 1], &eweMod);
-			BL_ConvertNumericIntoSingle(data[idx + 2], &currIMod);
-			BL_ConvertNumericIntoSingle(data[idx + 3], &phaseZwe);
-			BL_ConvertNumericIntoSingle(data[idx + 4], &ewe);
-			BL_ConvertNumericIntoSingle(data[idx + 5], &currI);
-			BL_ConvertNumericIntoSingle(data[idx + 7], &eceMod);
-			BL_ConvertNumericIntoSingle(data[idx + 8], &iceMod);
-			BL_ConvertNumericIntoSingle(data[idx + 9], &phaseZce);
-			BL_ConvertNumericIntoSingle(data[idx + 10], &ece);
-			BL_ConvertNumericIntoSingle(data[idx + 13], &tf);
+			freq = convertChannelNumericIntoSingle(data[idx + 0], chan_type);
+			eweMod = convertChannelNumericIntoSingle(data[idx + 1], chan_type);
+			currIMod = convertChannelNumericIntoSingle(data[idx + 2], chan_type);
+			phaseZwe = convertChannelNumericIntoSingle(data[idx + 3], chan_type);
+			ewe = convertChannelNumericIntoSingle(data[idx + 4], chan_type);
+			currI = convertChannelNumericIntoSingle(data[idx + 5], chan_type);
+			eceMod = convertChannelNumericIntoSingle(data[idx + 7], chan_type);
+			iceMod = convertChannelNumericIntoSingle(data[idx + 8], chan_type);
+			phaseZce = convertChannelNumericIntoSingle(data[idx + 9], chan_type);
+			ece = convertChannelNumericIntoSingle(data[idx + 10], chan_type);
+			tf = convertChannelNumericIntoSingle(data[idx + 13], chan_type);
 			fs1 << getAbsTime(chan_start_time, tf) << "," << tf << "," << loop << "," << freq << "," << eweMod
                 << "," << currIMod << "," << phaseZwe << "," << ewe	
                 << "," << currI << "," << eceMod << "," << iceMod	
@@ -770,12 +844,12 @@ void ECLabDriver::processPEISData(std::fstream& fs0, std::fstream& fs1, epicsTim
 	}
 }
 
-void ECLabDriver::processOCVData(std::fstream& fs, epicsTimeStamp& chan_start_time, int nrows, int ncols, int technique_index, int process_index, 
+void ECLabDriver::processOCVData(uint32_t chan_type, std::fstream& fs, epicsTimeStamp& chan_start_time, int nrows, int ncols, int technique_index, int process_index, 
                      int loop, double start_time, double time_base, TDataBuffer_t* dbuffer, int xctr)
 {
 	unsigned* data = dbuffer->data;
 	double t;
-	int idx, ret;
+	int idx;
 	float ewe;
 	if (m_techniques[technique_index].name != "ocv")
 	{
@@ -796,20 +870,20 @@ void ECLabDriver::processOCVData(std::fstream& fs, epicsTimeStamp& chan_start_ti
 	for(int i=0; i<nrows; ++i)
 	{
 		idx = i * ncols;
-		t = getTime(data[idx + 0], data[idx + 1], start_time, time_base);
-		ret = BL_ConvertNumericIntoSingle(data[idx + 2], &ewe);
+		t = getTime(data + idx, start_time, time_base, chan_type);
+		ewe = convertChannelNumericIntoSingle(data[idx + 2], chan_type);
 		fs << getAbsTime(chan_start_time, t) << "," << t << "," << loop << "," << ewe;
-		processXCTRVals(fs, &(data[idx]), xctr, 3, ncols);
+		processXCTRVals(chan_type, fs, &(data[idx]), xctr, 3, ncols);
 		fs << "\n";
 	}
 }
 
-void ECLabDriver::processCACPData(std::fstream& fs, epicsTimeStamp& chan_start_time, int nrows, int ncols, int technique_index, int process_index, 
+void ECLabDriver::processCACPData(uint32_t chan_type, std::fstream& fs, epicsTimeStamp& chan_start_time, int nrows, int ncols, int technique_index, int process_index, 
                      int loop, double start_time, double time_base, TDataBuffer_t* dbuffer, int xctr)
 {
 	unsigned* data = dbuffer->data;
 	double t;
-	int idx, ret;
+	int idx;
 	float ewe, current;
 	int cycle;	
 	if (m_techniques[technique_index].name != "ca" && m_techniques[technique_index].name != "cp")
@@ -831,22 +905,22 @@ void ECLabDriver::processCACPData(std::fstream& fs, epicsTimeStamp& chan_start_t
 	for(int i=0; i<nrows; ++i)
 	{
 		idx = i * ncols;
-		t = getTime(data[idx + 0], data[idx + 1], start_time, time_base);
-		ret = BL_ConvertNumericIntoSingle(data[idx + 2], &ewe);
-		ret = BL_ConvertNumericIntoSingle(data[idx + 3], &current);
+		t = getTime(data + idx, start_time, time_base, chan_type);
+		ewe = convertChannelNumericIntoSingle(data[idx + 2], chan_type);
+	    current = convertChannelNumericIntoSingle(data[idx + 3], chan_type);
 		cycle = data[idx + 4];
 		fs << getAbsTime(chan_start_time, t) << "," << t << "," << loop << "," << ewe << "," << current << "," << cycle;
-		processXCTRVals(fs, &(data[idx]), xctr, 5, ncols);
+		processXCTRVals(chan_type, fs, &(data[idx]), xctr, 5, ncols);
 		fs << "\n";
 	}
 }
 
-void ECLabDriver::processCVData(std::fstream& fs, epicsTimeStamp& chan_start_time, int nrows, int ncols, int technique_index, int process_index,
+void ECLabDriver::processCVData(uint32_t chan_type, std::fstream& fs, epicsTimeStamp& chan_start_time, int nrows, int ncols, int technique_index, int process_index,
                      int loop, double start_time, double time_base, TDataBuffer_t* dbuffer, int xctr)
 {
 	unsigned* data = dbuffer->data;
 	double t;
-	int idx, ret;
+	int idx;
 	float ewe, current;
 	int cycle;
 	if (m_techniques[technique_index].name != "cv")
@@ -868,12 +942,12 @@ void ECLabDriver::processCVData(std::fstream& fs, epicsTimeStamp& chan_start_tim
 	for(int i=0; i<nrows; ++i)
 	{
 		idx = i * ncols;
-		t = getTime(data[idx + 0], data[idx + 1], start_time, time_base);
-		ret = BL_ConvertNumericIntoSingle(data[idx + 2], &current);
-		ret = BL_ConvertNumericIntoSingle(data[idx + 3], &ewe);
+		t = getTime(data + idx, start_time, time_base, chan_type);
+		current = convertChannelNumericIntoSingle(data[idx + 2], chan_type);
+		ewe = convertChannelNumericIntoSingle(data[idx + 3], chan_type);
 		cycle = data[idx + 4];
 		fs << getAbsTime(chan_start_time, t) << "," << t << "," << loop << "," << current << "," << ewe << "," << cycle;
-		processXCTRVals(fs, &(data[idx]), xctr, 5, ncols);
+		processXCTRVals(chan_type, fs, &(data[idx]), xctr, 5, ncols);
 		fs << "\n";
 	}
 }
@@ -965,6 +1039,7 @@ void ECLabDriver::ECLabDataTask()
                 callParamCallbacks();
 				unlock();
 				int xctr = 0, P_xctr = -1;
+                uint32_t chan_type = m_board_type[i];
 				if (m_techniques.size() > dinfo.TechniqueIndex)
 				{
 					std::string param_name = m_techniques[dinfo.TechniqueIndex].name;
@@ -1001,7 +1076,7 @@ void ECLabDriver::ECLabDataTask()
 						processXCTRHeader(fs0, xctr);
 						fs0 << "\n";
 				    }
-					processOCVData(fs0, m_start_time[i], dinfo.NbRows, dinfo.NbCols, dinfo.TechniqueIndex, dinfo.ProcessIndex, 
+					processOCVData(chan_type, fs0, m_start_time[i], dinfo.NbRows, dinfo.NbCols, dinfo.TechniqueIndex, dinfo.ProcessIndex, 
 					        dinfo.loop, dinfo.StartTime, cvals.TimeBase, &dbuffer, xctr);
 				}
 				else if (dinfo.TechniqueID == KBIO_TECHID_CA || dinfo.TechniqueID == KBIO_TECHID_CP || 
@@ -1018,7 +1093,7 @@ void ECLabDriver::ECLabDataTask()
 						processXCTRHeader(fs0, xctr);
 						fs0 << "\n";
 				    }
-					processCACPData(fs0, m_start_time[i], dinfo.NbRows, dinfo.NbCols, dinfo.TechniqueIndex, dinfo.ProcessIndex, 
+					processCACPData(chan_type, fs0, m_start_time[i], dinfo.NbRows, dinfo.NbCols, dinfo.TechniqueIndex, dinfo.ProcessIndex, 
 					        dinfo.loop, dinfo.StartTime, cvals.TimeBase, &dbuffer, xctr);
 				}
 				else if (dinfo.TechniqueID == KBIO_TECHID_CV)
@@ -1034,7 +1109,7 @@ void ECLabDriver::ECLabDataTask()
 						processXCTRHeader(fs0, xctr);
 						fs0 << "\n";
 				    }
-					processCVData(fs0, m_start_time[i], dinfo.NbRows, dinfo.NbCols, dinfo.TechniqueIndex, dinfo.ProcessIndex,
+					processCVData(chan_type, fs0, m_start_time[i], dinfo.NbRows, dinfo.NbCols, dinfo.TechniqueIndex, dinfo.ProcessIndex,
 					        dinfo.loop, dinfo.StartTime, cvals.TimeBase, &dbuffer, xctr);
 				}
 				else if (dinfo.TechniqueID == KBIO_TECHID_PEIS)
@@ -1050,7 +1125,7 @@ void ECLabDriver::ECLabDataTask()
 					    fs1.open(filename, std::ios::out);
 						fs1 << "AbsTime,Time,Loop,Freq,Mod Ewe,Mod I,Phase Zwe,Ewe,I,Mod Ece,Mod Ice,Phase Zce,Ece\n";
 				    }
-					processPEISData(fs0, fs1, m_start_time[i], dinfo.NbRows, dinfo.NbCols, dinfo.TechniqueIndex, dinfo.ProcessIndex, 
+					processPEISData(chan_type, fs0, fs1, m_start_time[i], dinfo.NbRows, dinfo.NbCols, dinfo.TechniqueIndex, dinfo.ProcessIndex, 
 					        dinfo.loop, dinfo.StartTime, cvals.TimeBase, &dbuffer);
 				}
 				lock();

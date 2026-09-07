@@ -529,3 +529,11 @@ BIOLOGIC_API(int) BL_FindEChemDevStub( char* data, uint32* siz, uint32* ndv )
     *ndv = 1;
     return 0;    
 }
+
+BIOLOGIC_API(int) BL_GetChannelBoardTypeStub( int ID, uint8 ch, uint32_t* pChannelType)
+{
+    *pChannelType = 2; // BOARD_TYPE_CHANNEL_PREMIUM
+    return 0;
+}
+
+

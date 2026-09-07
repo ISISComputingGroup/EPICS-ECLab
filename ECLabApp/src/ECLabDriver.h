@@ -33,12 +33,15 @@ public:
 	virtual asynStatus writeInt8Array(asynUser *pasynUser, epicsInt8 *value, size_t nElements);
 	virtual void report(FILE* fp, int details);
 //	void testPrintMap(techniqueMap_t);
-    double getTime(unsigned thigh, unsigned tlow, double start_time, double time_base);
-    void processOCVData(std::fstream& fs, epicsTimeStamp& chan_start_time, int nrows, int ncols, int technique_index, int process_index, 
+    double getTime(uint32_t* ptime, double start_time, double time_base, uint32_t chan_type);
+    float convertChannelNumericIntoSingle(uint32_t num, uint32_t chan_type);
+    void processOCVData(uint32_t chan_type, std::fstream& fs, epicsTimeStamp& chan_start_time, int nrows, int ncols, int technique_index, int process_index, 
                      int loop, double start_time, double time_base, TDataBuffer_t* dbuffer, int xctr);
-    void processPEISData(std::fstream& fs0, std::fstream& fs1, epicsTimeStamp& chan_start_time, int nrows, int ncols, int technique_index, int process_index, 
+    void processPEISData(uint32_t chan_type, std::fstream& fs0, std::fstream& fs1, epicsTimeStamp& chan_start_time, int nrows, int ncols, int technique_index, int process_index, 
                      int loop, double start_time, double time_base, TDataBuffer_t* dbuffer);
 	void updateCvals(int chan, TCurrentValues_t& cvals, asynStatus paramStatus);
+    void getFirmwareFiles(uint32_t board_type, std::string& kernel_file, std::string& xlx_file);
+    std::string getTechniqueSuffix( uint32_t board_type );
 	
 private:
 	int P_version; // string
@@ -101,6 +104,7 @@ private:
 
 	int m_ID; // connection ID
 	std::map<int,epicsTimeStamp> m_start_time; // for each channel
+	std::map<int,uint32_t> m_board_type; // for each channel
 	
 	#define FIRST_ECLAB_PARAM P_version
 	#define LAST_ECLAB_PARAM P_stopChannel
@@ -109,14 +113,14 @@ private:
 	void ECLabValuesTask();
 	static void ECLabDataTaskC(void* arg);
 	void ECLabDataTask();
-	void processCACPData(std::fstream& fs, epicsTimeStamp& chan_start_time, int nrows, int ncols, int technique_index, int process_index, 
+	void processCACPData(uint32_t chan_type, std::fstream& fs, epicsTimeStamp& chan_start_time, int nrows, int ncols, int technique_index, int process_index, 
                      int loop, double start_time, double time_base, TDataBuffer_t* dbuffer, int xctr);
-	void processCVData(std::fstream& fs, epicsTimeStamp& chan_start_time, int nrows, int ncols, int technique_index, int process_index,
+	void processCVData(uint32_t chan_type, std::fstream& fs, epicsTimeStamp& chan_start_time, int nrows, int ncols, int technique_index, int process_index,
                      int loop, double start_time, double time_base, TDataBuffer_t* dbuffer, int xctr);
 	void printIntParam(std::ostream& os, const char* desc, int param);
     void printDoubleParam(std::ostream& os, const char* desc, int param);
 	std::string getAbsTime(epicsTimeStamp& base, double offset);
-	void processXCTRVals(std::fstream& fs, unsigned* row_data, unsigned xctr, int col_start, int ncols);
+	void processXCTRVals(uint32_t chan_type, std::fstream& fs, unsigned* row_data, unsigned xctr, int col_start, int ncols);
     void processXCTRHeader(std::fstream& fs, unsigned xctr);
 	const char* techName(int tech);
 };
